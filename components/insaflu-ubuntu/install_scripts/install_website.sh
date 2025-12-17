@@ -4,7 +4,7 @@ set -e
 setup_website() {
     echo "Setup website code"
     echo `which python3`
-    echo `python3 --version`
+    echo `python3 --developversion`
     echo `pip3 --version`
     
     mkdir /insaflu_web && cd /insaflu_web

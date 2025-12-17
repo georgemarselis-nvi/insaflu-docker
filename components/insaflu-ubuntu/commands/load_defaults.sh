@@ -1,7 +1,6 @@
 #!/bin/bash
 #SBATCH --export=ALL
 #$ --job-name=update_files
-#$ --partition=all.q
 #$ --ntasks=1
 #$ --output=/data/tmp/%x_%j.out
 #$ --error=/data/tmp/error_files.out
