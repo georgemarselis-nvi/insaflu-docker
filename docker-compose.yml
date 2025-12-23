@@ -252,7 +252,6 @@ services:
       - etc_slurm:/etc/slurm
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
-      - insaflu-ubuntu-predefined_dbs:/insaflu_web/INSaFLU/static_all/db
       - insaflu-software:/software
       - televir:/televir/mngs_benchmark
       - etc_munge:/etc/munge
