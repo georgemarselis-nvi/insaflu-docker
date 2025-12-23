@@ -15,7 +15,6 @@ services:
       - etc_slurm:/etc/slurm
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
-      - insaflu-ubuntu-predefined_dbs:/insaflu_web/INSaFLU/static_all/db
       - insaflu-software:/software
       - televir:/televir/mngs_benchmark
       - etc_munge:/etc/munge
@@ -54,9 +53,6 @@ volumes:
   var_log_slurm:
     external: true
     name: docker_var_log_slurm
-  insaflu-ubuntu-predefined_dbs:
-    external: true
-    name: docker_insaflu-ubuntu-predefined_dbs
   insaflu-software:
     external: true
     name: docker_insaflu-software
