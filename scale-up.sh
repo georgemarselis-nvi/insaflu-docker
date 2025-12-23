@@ -12,7 +12,7 @@ NUM_NODES=${1:-1}
 echo "Scaling up SLURM cluster by $NUM_NODES compute nodes..."
 
 # Get current highest node number
-CURRENT_NODES=$(docker ps --filter "name=slurm-node" --format "table {{.Names}}" | grep -c "slurm-node" || echo 0)
+CURRENT_NODES=$(docker ps --filter "name=slurm-node" --format "table {{.Names}}" | grep -c "slurm-node")
 NEXT_NODE_ID=$((CURRENT_NODES + 1))
 
 # Start new nodes
