@@ -52,7 +52,7 @@ networks:
 
 services:
   # DB for Insaflu
-  # test database - psql -U flu_user -W -h localhost -d insaflu_db
+  # test database - psql -U flu_user -W -h localhost -d insaflu_db 
   db_insaflu:
     build: components/postgres_postgis/.
     restart: always
@@ -118,7 +118,6 @@ services:
       - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
       - insaflu-ubuntu-log-insaflu:/var/log/insaFlu
       - insaflu-ubuntu-log-httpd:/var/log/httpd
-      #- insaflu-website:/insaflu_web/INSaFLU
       - insaflu-software:/software
       - slurm_jobdir:/data
       - etc_slurm:/etc/slurm
