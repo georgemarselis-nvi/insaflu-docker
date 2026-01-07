@@ -102,6 +102,7 @@ RUN set -x \
     /var/log/slurm \
     /data 
 
+
 RUN touch /var/lib/slurmd/node_state \
     /var/lib/slurmd/front_end_state \
     /var/lib/slurmd/job_state \

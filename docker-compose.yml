@@ -70,8 +70,14 @@ services:
     networks:
       insaflu_ubuntu_net:
         ipv4_address: 10.1.0.2
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "flu_user", "-d", "insaflu_db"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
 
-  # responsible to m
+  # responsible to manage the Slurm cluster
   officer:
     image: funkyfuture/deck-chores:1
     restart: unless-stopped
@@ -79,6 +85,7 @@ services:
       TIMEZONE: "${TIMEZONE}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
 
   # TELEVIR
   televir-server:
@@ -145,7 +152,7 @@ services:
     command: ["init_all"]
 
   mysql:
-    image: mariadb:10.11
+    image: mariadb:12
     hostname: mysql
     container_name: mysql
     environment:
@@ -157,30 +164,47 @@ services:
       - var_lib_mysql:/var/lib/mysql
     networks:
       - slurm-network
-
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+  
   slurmdbd:
-    image: slurm-docker-cluster:${IMAGE_TAG}
+    image: slurm-docker-cluster:${IMAGE_TAG:-25.05.3}
     build:
       context: components/slurm_master/.
       args:
-        SLURM_TAG: ${SLURM_TAG}
+        SLURM_TAG: ${SLURM_TAG:-25.05.3}
+      cache_from:
+        - slurm-docker-cluster:${SLURM_VERSION:-25.05.3}
     command: ["slurmdbd"]
     container_name: slurmdbd
     hostname: slurmdbd
     volumes:
       - etc_slurm:/etc/slurm
+      - etc_munge:/etc/munge
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
     expose:
       - "6819"
     depends_on:
-      - "db_insaflu"
-      - "mysql"
+      db_insaflu:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
     networks:
       - slurm-network
+    healthcheck:
+      test: ["CMD-SHELL", "pidof slurmdbd"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   slurmctld:
-    image: slurm-docker-cluster:${IMAGE_TAG}
+    image: slurm-docker-cluster:${IMAGE_TAG:-25.05.3}
     build:
       context: components/slurm_master/.
       args:
@@ -189,20 +213,28 @@ services:
     container_name: slurmctld
     hostname: slurmctld
     volumes:
-      - etc_slurm:/etc/slurm
-      - etc_munge:/etc/munge
-      - slurm_jobdir:/data
-      - var_log_slurm:/var/log/slurm
+      - etc_slurm:/etc/slurm:z
+      - etc_munge:/etc/munge:z
+      - slurm_jobdir:/data:z
+      - var_log_slurm:/var/log/slurm:z
     expose:
       - "6817"
     depends_on:
-      - "slurmdbd"
-      - "mysql"
+      slurmdbd:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
     networks:
       - slurm-network
+    healthcheck:
+      test: ["CMD-SHELL", "scontrol ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   c1:
-    image: slurm-docker-nodes:${IMAGE_TAG}
+    image: slurm-docker-nodes:${IMAGE_TAG:-25.05.3}
     build:
       context: components/slurm_nodes/.
       args:
@@ -210,15 +242,17 @@ services:
     command: ["slurmd"]
     hostname: c1
     container_name: c1
+    working_dir: /data
+    privileged: true
     volumes:
-      - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
-      - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
       - etc_slurm:/etc/slurm
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
+      - etc_munge:/etc/munge
+      - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
+      - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
       - insaflu-software:/software
       - televir:/televir/mngs_benchmark
-      - etc_munge:/etc/munge
       - var_log_insaflu:/var/log/insaFlu
       - tmp_insaflu:/tmp/insaFlu
       - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
@@ -226,9 +260,12 @@ services:
     expose:
       - "6818"
     depends_on:
-      - slurmctld
-      - db_insaflu
-      - officer
+      slurmctld:
+        condition: service_healthy
+      db_insaflu:
+        condition: service_healthy
+      officer:
+        condition: service_healthy
     networks:
       insaflu_ubuntu_net:
         ipv4_address: 10.1.0.6

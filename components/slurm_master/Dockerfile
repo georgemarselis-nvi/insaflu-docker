@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 
 LABEL org.opencontainers.image.source="https://github.com/giovtorres/slurm-docker-cluster" \
     org.opencontainers.image.title="slurm-docker-cluster" \
-    org.opencontainers.image.description="Slurm Docker cluster on Ubuntu 20.04" \
+    org.opencontainers.image.description="Slurm Docker cluster on Ubuntu 22.04" \
     org.label-schema.docker.cmd="docker-compose up -d" \
     maintainer="Giovanni Torres"
 
@@ -13,8 +13,6 @@ ARG SHARED_USER_NAME=user
 ARG SHARED_USER_UID=1000
 ARG SHARED_GROUP_NAME=user
 ARG SHARED_GROUP_GID=1000
-
-
 
 #### standardize munge and slurm users and groups across machines.
 RUN set -x \

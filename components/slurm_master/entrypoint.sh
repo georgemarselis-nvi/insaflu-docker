@@ -17,6 +17,8 @@ then
         done
     }
     echo "-- Database is now active ..."
+    # print slurmdbd version
+    echo "slurmdbd version:" $(/usr/sbin/slurmdbd -V)
     
     exec gosu slurm /usr/sbin/slurmdbd -Dvvv
 fi
