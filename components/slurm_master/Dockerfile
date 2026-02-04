@@ -1,85 +1,35 @@
-FROM ubuntu:22.04
-
-
-LABEL org.opencontainers.image.source="https://github.com/giovtorres/slurm-docker-cluster" \
-    org.opencontainers.image.title="slurm-docker-cluster" \
-    org.opencontainers.image.description="Slurm Docker cluster on Ubuntu 22.04" \
-    org.label-schema.docker.cmd="docker-compose up -d" \
-    maintainer="Giovanni Torres"
-
-ARG GOSU_VERSION=1.17
+# =========================
+# Stage 1 — build Slurm
+# =========================
+FROM ubuntu:22.04 AS slurm-build
 ARG SLURM_TAG
-ARG SHARED_USER_NAME=user
-ARG SHARED_USER_UID=1000
-ARG SHARED_GROUP_NAME=user
-ARG SHARED_GROUP_GID=1000
 
-#### standardize munge and slurm users and groups across machines.
-RUN set -x \
-    && groupadd -r --gid=990 slurm \
-    && useradd -r -g slurm --uid=990 slurm
-
-RUN set -x \
-    && groupadd -r --gid=999 mysql \
-    && useradd -r -g mysql --uid=999 mysql 
-
-RUN set -x \
-    && groupadd -r --gid=102 munge \
-    && useradd -r -g munge --uid=102 munge 
-
-ENV APP_USER=flu_user
-RUN useradd -ms /bin/bash ${APP_USER} -r -g slurm --uid=${SHARED_USER_UID} 
-
-
-####
-RUN set -ex \
-    && apt-get update \
-    && apt-get -y upgrade \
-    && apt-get -y install \
-    wget \
-    bzip2 \
-    perl \
-    gcc \
-    g++ \
+RUN apt-get update && apt-get install -y \
+    build-essential \
     git \
-    gnupg \
-    make \
     munge \
     libmunge-dev \
-    python3-dev \
-    python3-pip \
-    python3 \
     mariadb-server \
     libmariadb-dev \
-    psmisc \
-    bash-completion \
-    vim \
     libhttp-parser-dev \
     libjson-c-dev \
-    && apt-get clean \
+    python3-dev \
+    libcap-dev \
+    libdbus-1-dev \
+    libpam0g-dev \
+    python3 \
+    wget \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-
-RUN pip3 install Cython pytest
-
-RUN set -ex \
-    && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-amd64" \
-    && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-amd64.asc" \
-    && export GNUPGHOME="$(mktemp -d)" \
-    && gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
-    && gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \
-    && rm -rf "${GNUPGHOME}" /usr/local/bin/gosu.asc \
-    && chmod +x /usr/local/bin/gosu \
-    && gosu nobody true
-
+WORKDIR /build
 
 RUN set -x \
     && git clone -b ${SLURM_TAG} --single-branch --depth=1 https://github.com/SchedMD/slurm.git \
     && cd slurm \
     && ./configure --enable-debug --prefix=/usr --sysconfdir=/etc/slurm \
     --with-mysql_config=/usr/bin  --libdir=/usr/lib/x86_64-linux-gnu \
+    --enable-pam --enable-cgroup --disable-systemd \
     && make install \
     && install -D -m644 etc/cgroup.conf.example /etc/slurm/cgroup.conf.example \
     && install -D -m644 etc/slurm.conf.example /etc/slurm/slurm.conf.example \
@@ -95,10 +45,53 @@ RUN set -x \
     /var/log/slurm \
     /data 
 
-RUN touch /var/lib/slurmd/node_state \
-    /var/lib/slurmd/assoc_usage \
-    /var/lib/slurmd/qos_usage \
-    /var/lib/slurmd/fed_mgr_state \
+# =========================
+# Stage 2 — runtime
+# =========================
+
+FROM ubuntu:22.04 AS slurm-runtime
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG GOSU_VERSION=1.17
+ARG SHARED_USER_UID=1000
+
+# Users/groups MUST match across all containers
+RUN set -x \
+    && groupadd -r --gid=990 slurm \
+    && useradd -r -g slurm --uid=990 slurm
+
+RUN set -x \
+    && groupadd -r --gid=102 munge \
+    && useradd -r -g munge --uid=102 -d /var/lib/munge -s /sbin/nologin munge
+
+
+ENV APP_USER=flu_user
+RUN useradd -ms /bin/bash ${APP_USER} -r -g slurm --uid=${SHARED_USER_UID} 
+
+RUN apt-get update && apt-get install -y \
+    munge mariadb-client psmisc bash-completion \
+    ca-certificates wget gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
+# gosu
+RUN wget -O /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64 \
+    && chmod +x /usr/local/bin/gosu
+
+# Slurm binaries
+COPY --from=slurm-build /usr /usr
+COPY --from=slurm-build /etc/slurm /etc/slurm
+COPY --from=slurm-build /etc/profile.d/slurm_completion.sh /etc/profile.d/
+
+RUN mkdir -p \
+    /var/log/slurm \
+    /var/run/slurmd \
+    /var/run/slurmdbd \
+    /var/lib/slurmd \
+    /var/lib/slurmctld \
+    /var/run/munge \
+    /var/spool/slurm \
+    /var/spool/slurmd \
+    /data \
     && chown -R slurm:slurm /var/*/slurm* \
     && /sbin/mungekey -cf \
     && chown -R munge:munge /etc/munge \
@@ -111,37 +104,16 @@ RUN touch /var/lib/slurmd/node_state \
 COPY configs/munge/munged.pid /var/run/munge/munged.pid
 RUN chown munge:munge /var/run/munge/munged.pid
 
-COPY configs/slurm/slurm.conf /etc/slurm/slurm.conf
-RUN chown slurm:slurm /etc/slurm/slurm.conf \
-    && chmod 644 /etc/slurm/slurm.conf
+RUN mkdir -p /etc/slurm \
+    && chown slurm:slurm /etc/slurm \
+    && chmod 755 /etc/slurm
 
-COPY configs/slurm/cgroup.conf /etc/slurm/cgroup.conf 
-COPY configs/slurm/slurmdbd.conf /etc/slurm/slurmdbd.conf
-RUN set -x \
-    && chown slurm:slurm /etc/slurm/slurmdbd.conf \
-    && chmod 600 /etc/slurm/slurmdbd.conf
+RUN mkdir -p /var/run/slurm \
+    && chown -R slurm:slurm /var/run/slurm \
+    && chmod 755 /var/run/slurm
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
-RUN chown slurm:slurm /usr/local/bin/entrypoint.sh
-
-COPY configs/munge/munge.key /etc/munge/
-RUN chmod 400 /etc/munge/munge.key
-RUN chown munge:munge /etc/munge/munge.key
-
-RUN apt-get update \
-    && apt-get install -y sudo
-
-
-#RUN echo "admin:admin" | chpasswd && id -u admin || sudo adduser admin && echo "admin     ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-#USER admin
-#ENV USER=admin
-
-#RUN set -x \
-#    && groupadd --gid=${SHARED_GROUP_GID} ${SHARED_GROUP_NAME} \
-#    && useradd -g ${SHARED_GROUP_NAME} --uid=${SHARED_USER_UID} ${SHARED_USER_NAME}
-
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
 CMD ["slurmdbd"]
