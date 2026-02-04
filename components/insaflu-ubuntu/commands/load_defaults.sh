@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --export=ALL
-#$ --job-name=update_files
-#$ --ntasks=1
-#$ --output=/data/tmp/%x_%j.out
-#$ --error=/data/tmp/error_files.out
+#SBATCH --job-name=update_files
+#SBATCH --ntasks=1
+#SBATCH --output=/data/tmp/%x_%j.out
+#SBATCH --error=/data/tmp/error_files.out
 
 set -e
 

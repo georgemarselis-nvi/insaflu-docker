@@ -8,6 +8,7 @@ volumes:
   insaflu-software:
   etc_munge:
   tmp_insaflu:
+  munge_run:
 
   pg_data:
     driver: local-persist
@@ -52,7 +53,7 @@ networks:
 
 services:
   # DB for Insaflu
-  # test database - psql -U flu_user -W -h localhost -d insaflu_db
+  # test database - psql -U flu_user -W -h localhost -d insaflu_db 
   db_insaflu:
     build: components/postgres_postgis/.
     restart: always
@@ -69,9 +70,14 @@ services:
       - 5432
     networks:
       insaflu_ubuntu_net:
-        ipv4_address: 10.1.0.2
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "flu_user", "-d", "insaflu_db"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
 
-  # responsible to m
+  # responsible to manage the Slurm cluster
   officer:
     image: funkyfuture/deck-chores:1
     restart: unless-stopped
@@ -79,6 +85,13 @@ services:
       TIMEZONE: "${TIMEZONE}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f deck-chores >/dev/null || exit 1"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
 
   # TELEVIR
   televir-server:
@@ -97,8 +110,178 @@ services:
     stdin_open: true
     networks:
       insaflu_ubuntu_net:
-        ipv4_address: 10.1.0.5
     command: ["move"]
+
+
+  mysql:
+    image: mariadb:12
+    hostname: mysql
+    container_name: mysql
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: slurm_acct_db
+      MYSQL_USER: slurm
+      MYSQL_PASSWORD: password
+    volumes:
+      - var_lib_mysql:/var/lib/mysql
+    networks:
+      - slurm-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+  
+  slurmdbd:
+    image: slurm-runtime:${SLURM_TAG:-25.05.3}
+    build:
+      context: components/slurm_master/.
+      args:
+        SLURM_TAG: ${SLURM_TAG:-25.05.3}
+    command: ["slurmdbd"]
+    container_name: slurmdbd
+    hostname: slurmdbd
+    volumes:
+      - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
+      - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
+      - slurm_jobdir:/data
+      - var_log_slurm:/var/log/slurm
+    expose:
+      - "6819"
+    depends_on:
+      db_insaflu:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - slurm-network
+    healthcheck:
+      test: ["CMD-SHELL", "pidof slurmdbd"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  slurmctld:
+    image: slurm-runtime:${SLURM_TAG:-25.05.3}
+    build:
+      context: components/slurm_master/.
+      args:
+        SLURM_TAG: ${SLURM_TAG}
+    command: ["slurmctld"]
+    container_name: slurmctld
+    hostname: slurmctld
+    volumes:
+      - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
+      - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
+      - slurm_jobdir:/data:rw
+      - var_log_slurm:/var/log/slurm:rw
+      - munge_run:/run/munge
+    expose:
+      - "6817"
+    depends_on:
+      slurmdbd:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - slurm-network
+    healthcheck:
+      test: ["CMD-SHELL", "scontrol ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+
+  c1:
+    image: slurm-docker-nodes:${IMAGE_TAG:-25.05.3}
+    build:
+      context: components/slurm_nodes/.
+      args:
+        SLURM_TAG: ${SLURM_TAG}
+    command: ["slurmd", "-D"]
+    working_dir: /data
+    hostname: c1
+    container_name: c1
+    privileged: true
+    volumes:
+      - ./components/slurm_nodes/configs/slurm:/run/secrets/slurm:ro
+      - slurm_jobdir:/data 
+      - var_log_slurm:/var/log/slurm
+      - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
+      - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
+      - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
+      - insaflu-software:/software
+      - televir:/televir/mngs_benchmark
+      - var_log_insaflu:/var/log/insaFlu
+      - tmp_insaflu:/tmp/insaFlu
+      - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
+      - munge_run:/run/munge
+    expose:
+      - "6818"
+    depends_on:
+      slurmctld:
+        condition: service_started
+      db_insaflu:
+        condition: service_healthy
+      officer:
+        condition: service_healthy
+    networks:
+      slurm-network:
+      insaflu_ubuntu_net:
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -x slurmd >/dev/null"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+
+  c2:
+    image: slurm-docker-nodes:${IMAGE_TAG:-25.05.3}
+    build:
+      context: components/slurm_nodes/.
+      args:
+        SLURM_TAG: ${SLURM_TAG}
+    command: ["slurmd", "-D"]
+    working_dir: /data
+    hostname: c2
+    container_name: c2
+    privileged: true
+    volumes:
+      - ./components/slurm_nodes/configs/slurm:/run/secrets/slurm:ro
+      - slurm_jobdir:/data 
+      - var_log_slurm:/var/log/slurm
+      - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
+      - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
+      - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
+      - insaflu-software:/software
+      - televir:/televir/mngs_benchmark
+      - var_log_insaflu:/var/log/insaFlu
+      - tmp_insaflu:/tmp/insaFlu
+      - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
+      - munge_run:/run/munge
+    expose:
+      - "6818"
+    depends_on:
+      slurmctld:
+        condition: service_started
+      db_insaflu:
+        condition: service_healthy
+      officer:
+        condition: service_healthy
+    networks:
+      slurm-network:
+      insaflu_ubuntu_net:
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -x slurmd >/dev/null"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
 
   # insaflu
   # password and database login are defined in components/insaflu/configs/insaflu.env
@@ -118,23 +301,26 @@ services:
       - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
       - insaflu-ubuntu-log-insaflu:/var/log/insaFlu
       - insaflu-ubuntu-log-httpd:/var/log/httpd
-      #- insaflu-website:/insaflu_web/INSaFLU
       - insaflu-software:/software
       - slurm_jobdir:/data
-      - etc_slurm:/etc/slurm
-      - etc_munge:/etc/munge
+      - ./components/insaflu-ubuntu/configs/slurm:/run/secrets/slurm:ro
+      - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
       - var_log_insaflu:/var/log/insaFlu
       - tmp_insaflu:/tmp/insaFlu
+      - munge_run:/run/munge
     labels:
       deck-chores.update-pangolin.command: sh -c "/software/update_pangolin.sh"
       # weekly, daily, hourly, every minute and every second.
       deck-chores.update-pangolin.interval: hourly
     depends_on:
-      - db_insaflu
-      - officer
-      - slurmctld
-      - c1
-      - c2
+      db_insaflu:
+        condition: service_healthy
+      officer:
+        condition: service_healthy
+      slurmctld:
+        condition: service_started
+      c1:
+        condition: service_healthy
     environment:
       - SGE_ROOT=/opt/sge
     ports:
@@ -142,131 +328,6 @@ services:
     tty: true
     stdin_open: true
     networks:
-      insaflu_ubuntu_net:
-        ipv4_address: 10.1.0.4
       slurm-network:
+      insaflu_ubuntu_net:
     command: ["init_all"]
-
-  mysql:
-    image: mariadb:10.11
-    hostname: mysql
-    container_name: mysql
-    environment:
-      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
-      MYSQL_DATABASE: slurm_acct_db
-      MYSQL_USER: slurm
-      MYSQL_PASSWORD: password
-    volumes:
-      - var_lib_mysql:/var/lib/mysql
-    networks:
-      - slurm-network
-
-  slurmdbd:
-    image: slurm-docker-cluster:${IMAGE_TAG}
-    build:
-      context: components/slurm_master/.
-      args:
-        SLURM_TAG: ${SLURM_TAG}
-    command: ["slurmdbd"]
-    container_name: slurmdbd
-    hostname: slurmdbd
-    volumes:
-      - etc_slurm:/etc/slurm
-      - slurm_jobdir:/data
-      - var_log_slurm:/var/log/slurm
-    expose:
-      - "6819"
-    depends_on:
-      - "db_insaflu"
-      - "mysql"
-    networks:
-      - slurm-network
-
-  slurmctld:
-    image: slurm-docker-cluster:${IMAGE_TAG}
-    build:
-      context: components/slurm_master/.
-      args:
-        SLURM_TAG: ${SLURM_TAG}
-    command: ["slurmctld"]
-    container_name: slurmctld
-    hostname: slurmctld
-    volumes:
-      - etc_slurm:/etc/slurm
-      - etc_munge:/etc/munge
-      - slurm_jobdir:/data
-      - var_log_slurm:/var/log/slurm
-    expose:
-      - "6817"
-    depends_on:
-      - "slurmdbd"
-      - "mysql"
-    networks:
-      - slurm-network
-
-  c1:
-    image: slurm-docker-nodes:${IMAGE_TAG}
-    build:
-      context: components/slurm_nodes/.
-      args:
-        SLURM_TAG: ${SLURM_TAG}
-    command: ["slurmd"]
-    hostname: c1
-    container_name: c1
-    volumes:
-      - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
-      - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
-      - etc_slurm:/etc/slurm
-      - slurm_jobdir:/data
-      - var_log_slurm:/var/log/slurm
-      - insaflu-software:/software
-      - televir:/televir/mngs_benchmark
-      - etc_munge:/etc/munge
-      - var_log_insaflu:/var/log/insaFlu
-      - tmp_insaflu:/tmp/insaFlu
-      - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
-
-    expose:
-      - "6818"
-    depends_on:
-      - slurmctld
-      - db_insaflu
-      - officer
-    networks:
-      insaflu_ubuntu_net:
-        ipv4_address: 10.1.0.6
-      slurm-network:
-
-  c2:
-    image: slurm-docker-nodes:${IMAGE_TAG}
-    build:
-      context: components/slurm_nodes/.
-      args:
-        SLURM_TAG: ${SLURM_TAG}
-    command: ["slurmd"]
-    hostname: c2
-    container_name: c2
-    volumes:
-      - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
-      - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
-      - etc_slurm:/etc/slurm
-      - slurm_jobdir:/data
-      - var_log_slurm:/var/log/slurm
-      - insaflu-software:/software
-      - televir:/televir/mngs_benchmark
-      - etc_munge:/etc/munge
-      - tmp_insaflu:/tmp/insaFlu
-      - var_log_insaflu:/var/log/insaFlu
-      - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
-      
-    expose:
-      - "6818"
-    depends_on:
-      - slurmctld
-      - db_insaflu
-      - officer
-    networks:
-      insaflu_ubuntu_net:
-        ipv4_address: 10.1.0.7
-      slurm-network:
-

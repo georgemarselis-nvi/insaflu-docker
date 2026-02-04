@@ -1,12 +1,50 @@
 #!/bin/bash
 set -e
 
+
+
+move_slurm_key() {
+
+    MUNGE_KEY_SRC=/run/secrets/munge.key
+    MUNGE_KEY_DST=/etc/munge/munge.key
+
+    if [ ! -s "$MUNGE_KEY_SRC" ]; then
+    echo "FATAL: munge.key missing"
+    exit 1
+    fi
+
+    # Ensure directory exists
+    mkdir -p /etc/munge
+
+    # Copy only if needed
+    if [ ! -f "$MUNGE_KEY_DST" ]; then
+    cp "$MUNGE_KEY_SRC" "$MUNGE_KEY_DST"
+    chown munge:munge "$MUNGE_KEY_DST"
+    chmod 400 "$MUNGE_KEY_DST"
+    fi
+}
+
+copy_slurm_config() {
+  if [ -d /run/secrets/slurm ]; then
+    echo "---> Initializing Slurm config from secrets"
+    cp -a /run/secrets/slurm/* /etc/slurm/
+
+    chown -R slurm:slurm /etc/slurm
+
+    # Strict permissions required by Slurm
+    chmod 644 /etc/slurm/slurm.conf || true
+    chmod 644 /etc/slurm/slurmdbd.conf || true
+    chmod 644 /etc/slurm/cgroup.conf || true
+  fi
+}
+
 # build DBs and launch frontend
 if [ "$1" = "init_all" ]; then
     echo "---> Starting the MUNGE Authentication service (munged) ..."
-    #service munge start
+    move_slurm_key
+    copy_slurm_config
     
-    gosu munge munged --pid-file=/var/run/munge/munged.pid
+    #gosu munge munged --pid-file=/var/run/munge/munged.pid
     
     echo "---> Wait 45 seconds for all pgsql services  ..."
     sleep 45	## wait for postgis extension
@@ -40,7 +78,7 @@ if [ "$1" = "init_all" ]; then
     echo "---> Set default files and settings  ..."
     mkdir -p /data/tmp && cd /data/tmp/;  chown -R APP_USER:slurm /data/;
     cp /insaflu_web/commands/load_defaults.sh .
-    sudo -u flu_user sbatch load_defaults.sh
+    sbatch load_defaults.sh
     cd /insaflu_web/INSaFLU; 
 
     ### some files/paths are made by "root" account and need to be accessed by "flu_user"
@@ -58,7 +96,6 @@ if [ "$1" = "init_all" ]; then
     echo "--->  Set up TELEVIR software  ..."
     if [ -e /televir/mngs_benchmark/utility_docker.db ]; then
         cd /insaflu_web/INSaFLU; /usr/bin/python3 manage.py generate_default_trees; #/usr/bin/python3 manage.py register_references_on_file -o /tmp/insaFlu/register
-        
     fi
     
     echo "---> Start apache server  ..."
