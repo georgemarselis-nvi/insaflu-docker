@@ -321,6 +321,8 @@ services:
         condition: service_started
       c1:
         condition: service_healthy
+      c2: 
+        condition: service_healthy
     environment:
       - SGE_ROOT=/opt/sge
     ports:

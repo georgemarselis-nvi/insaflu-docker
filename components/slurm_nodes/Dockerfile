@@ -36,11 +36,6 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 RUN chown slurm:slurm /usr/local/bin/entrypoint.sh
 
-# Copy node management scripts
-COPY scripts /scripts
-RUN chmod +x /scripts/*.sh
-RUN chown -R slurm:slurm /scripts
-
 RUN mkdir -p /tmp/insaFlu && chown ${APP_USER}:slurm /tmp/insaFlu
 
 RUN apt-get update \

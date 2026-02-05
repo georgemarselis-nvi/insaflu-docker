@@ -11,7 +11,7 @@ echo "---> Load default files  ..."
 if [ ! -e "/software/prokka/db/hmm/HAMAP.hmm.h3f" ]; then
     echo "---> Set prokka default databases  ..."
     ## for fresh prokka instalations
-    /software/prokka/bin/prokka --setupdb
+    /software/prokka/bin/prokka --setupdb /software/prokka/db/
 fi
 cd /insaflu_web/INSaFLU; /usr/bin/python3 manage.py load_default_files;
 cd /insaflu_web/INSaFLU; /usr/bin/python3 manage.py load_default_settings;
