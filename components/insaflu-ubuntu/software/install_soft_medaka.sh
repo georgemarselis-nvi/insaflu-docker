@@ -17,6 +17,11 @@ git clone https://github.com/lh3/minimap2.git
 cd minimap2/
 make
 
+## install abpoa
+cd /software/extra_software
+wget https://github.com/yangao07/abPOA/releases/download/v1.5.5/abPOA-v1.5.5.tar.gz
+tar -zxvf abPOA-v1.5.5.tar.gz && rm abPOA-v1.5.5.tar.gz && cd abPOA-v1.5.5 && make
+
 #Install HTSLIB
 cd ..
 wget https://github.com/samtools/htslib/releases/download/1.9/htslib-1.9.tar.bz2
@@ -49,4 +54,5 @@ ln -s ../extra_software/htslib-1.9/bgzip .
 ln -s ../extra_software/htslib-1.9/tabix .
 ln -s ../extra_software/samtools-1.9/samtools .
 ln -s ../extra_software/bcftools-1.9/bcftools .
+ln -s ../extra_software/abPOA-v1.5.5/abpoa .
 
