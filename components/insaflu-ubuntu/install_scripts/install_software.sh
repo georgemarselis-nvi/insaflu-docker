@@ -247,9 +247,9 @@ fi
 
 ### install hmmer v3.4
 echo "Install hmmer 3.4"
-cd /software && wget http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz && tar -xzf hmmer-3.4.tar.gz && rm hmmer-3.4.tar.gz && cd hmmer-3.4 && ./configure && make && make install
-cd /software && wget http://eddylab.org/infernal/infernal-1.1.5.tar.gz && tar -xzf infernal-1.1.5.tar.gz && rm infernal-1.1.5.tar.gz && cd infernal-1.1.5 && ./configure && make && make install
+cd /software && wget http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz && tar -xzf hmmer-3.4.tar.gz && rm hmmer-3.4.tar.gz && mv hmmer-3.4 hmmer && cd hmmer && ./configure && make && make install
+cd /software && wget http://eddylab.org/infernal/infernal-1.1.5.tar.gz && tar -xzf infernal-1.1.5.tar.gz && rm infernal-1.1.5.tar.gz && mv infernal-1.1.5 infernal && cd infernal && ./configure && make && make install
 if [ $? -ne 0 ]; then
     echo "Error installing hmmer 3.4"
-    exit 1
+    exit 1 
 fi

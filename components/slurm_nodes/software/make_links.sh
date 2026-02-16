@@ -5,6 +5,8 @@ ln -s /software/snippy/binaries/noarch/vcffirstheader /usr/local/bin/vcffirsthea
 ln -s /software/snippy/binaries/linux/vcfstreamsort /usr/local/bin/vcfstreamsort
 ln -s /software/snippy/binaries/linux/vcfuniq /usr/local/bin/vcfuniq
 
-ln -s /software/medaka/extra_software/htslib-1.9/bgzip /usr/local/bin/bgzip
-ln -s /software/medaka/extra_software/htslib-1.9/tabix /usr/local/bin/tabix
-ln -s /software/extra_software/abPOA-v1.5.5/bin/abpoa /usr/local/bin/abpoa
+ln -s /software/medaka/extra_software/htslib-1.11/bgzip /usr/local/bin/bgzip
+ln -s /software/medaka/extra_software/htslib-1.11/tabix /usr/local/bin/tabix
+ln -s /software/medaka/extra_software/abPOA-v1.5.5/bin/abpoa /usr/local/bin/abpoa
+ln -s /software/hmmer/src/hmmpress /usr/local/bin/hmmpress
+ln -s /software/hmmer/src/cmpress /usr/local/bin/cmpress
