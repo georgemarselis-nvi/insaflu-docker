@@ -6,9 +6,11 @@ set -e
 # Miniconda2: will be useful to install several softwares
 mkdir -p /software/extra_software && cd /software/extra_software && wget https://repo.anaconda.com/miniconda/Miniconda2-4.7.12.1-Linux-x86_64.sh && sh Miniconda2-4.7.12.1-Linux-x86_64.sh -b -p /software/miniconda2/ && rm Miniconda2-4.7.12.1-Linux-x86_64.sh
 
+eval "$(/software/miniconda2/bin/conda shell.bash hook)" 
+
 # iVar environment
 echo "Install iVar"
-eval "$(/software/miniconda2/bin/conda shell.bash hook)" && conda create --name=ivar -c conda-forge -c bioconda ivar=1.4.2 bedtools=2.31.0 bwa=0.7.17
+conda create --name=ivar -c conda-forge -c bioconda ivar=1.4.2 bedtools=2.31.0 bwa=0.7.17
 if [ $? -ne 0 ]; then
     echo "Error installing iVar"
     exit 1
@@ -16,7 +18,7 @@ fi
 
 # Aln2pheno
 echo "Install Aln2Pheno"
-eval "$(/software/miniconda2/bin/conda shell.bash hook)" && conda create --name=aln2pheno python=3 && conda activate aln2pheno && pip install algn2pheno==1.1.5 --quiet && conda deactivate && mv /tmp_install/software/aln2pheno /software/ && chmod u+x /software/aln2pheno/aln2pheno.sh
+conda create --name=aln2pheno python=3 && conda activate aln2pheno && pip install algn2pheno==1.1.5 --quiet && conda deactivate && mv /tmp_install/software/aln2pheno /software/ && chmod u+x /software/aln2pheno/aln2pheno.sh
 if [ $? -ne 0 ]; then
     echo "Error installing Aln2pheno"
     exit 1
@@ -24,7 +26,7 @@ fi
 
 # FluMut
 echo "Install FluMut"
-eval "$(/software/miniconda2/bin/conda shell.bash hook)" && conda create --name=flumut -c conda-forge -c bioconda flumut=0.6.3
+conda create --name=flumut -c conda-forge -c bioconda flumut=0.6.3
 if [ $? -ne 0 ]; then
     echo "Error installing FluMut"
     exit 1
@@ -32,7 +34,7 @@ fi
 
 # IRMA
 echo "Install IRMA"
-eval "$(/software/miniconda2/bin/conda shell.bash hook)" && conda create --name=irma -c conda-forge -c bioconda irma=1.2.0
+conda create --name=irma -c conda-forge -c bioconda irma=1.2.0
 if [ $? -ne 0 ]; then
     echo "Error installing IRMA"
     exit 1
@@ -98,3 +100,7 @@ if [ $? -ne 0 ]; then
     echo "Error installing raven"
     exit 1
 fi
+
+# tbl2asn
+echo "Install tbl2asn"
+conda create --name=tbl2asn -c conda-forge tbl2asn-forever=25.7.2f

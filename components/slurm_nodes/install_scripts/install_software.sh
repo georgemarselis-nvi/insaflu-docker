@@ -3,7 +3,8 @@ set -e
 
 ### install basic 
 apt-get update
-apt-get install bc samtools parallel meson ninja-build libvcflib-tools vcftools -y
+apt-get install bc samtools parallel meson ninja-build libvcflib-tools vcftools aragorn prodigal -y
+
 
 ### any2fasta - necessary for abricate
 echo "Install any2fasta"
