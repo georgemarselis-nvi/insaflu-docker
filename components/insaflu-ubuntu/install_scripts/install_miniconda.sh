@@ -103,4 +103,4 @@ fi
 
 # tbl2asn
 echo "Install tbl2asn"
-conda create --name=tbl2asn -c conda-forge tbl2asn-forever=25.7.2f
+conda create --name=tbl2asn -c bioconda tbl2asn-forever=25.7.2f

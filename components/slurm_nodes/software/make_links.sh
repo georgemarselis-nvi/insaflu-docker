@@ -11,3 +11,5 @@ ln -s /software/medaka/extra_software/abPOA-v1.5.5/bin/abpoa /usr/local/bin/abpo
 ln -s /software/hmmer/src/hmmpress /usr/local/bin/hmmpress
 ln -s /software/infernal/src/cmpress /usr/local/bin/cmpress
 ln -s /software/miniconda2/envs/tbl2asn/bin/tbl2asn /usr/local/bin/tbl2asn
+ln -s /software/miniconda2/envs/tbl2asn/bin/real-tbl2asn /usr/local/bin/real-tbl2asn
+ln -s /software/hmmer/src/hmmscan /usr/local/bin/hmmscan

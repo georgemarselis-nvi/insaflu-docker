@@ -42,6 +42,7 @@ docker compose up $IMAGE
 
 echo "Registering references on file..."
 
-docker exec c1 bash -c "/usr/bin/python3 /insaflu_web/INSaFLU/manage.py register_references_on_file --user_id 1 -o /tmp/insaFlu/register_references > /tmp/insaFlu/register_references.log 2>&1 &"
+#docker exec c1 bash -c "/usr/bin/python3 /insaflu_web/INSaFLU/manage.py register_references_on_file --user_id 1 -o /tmp/insaFlu/register_references > /tmp/insaFlu/register_references.log 2>&1 &"
+docker exec insaflu-ubuntu bash -c "cd /data/tmp/ && sbatch register_televir_refs.sh"
 
 echo "Registering references on file deployed."

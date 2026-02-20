@@ -39,6 +39,7 @@ USER root
 RUN sh /tmp_install/install_miniconda.sh
 RUN sh /tmp_install/install_software.sh
 
+
 RUN sh /tmp_install/install_website_dependencies.sh
 RUN sh /tmp_install/install_website.sh
 
