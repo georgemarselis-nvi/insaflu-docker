@@ -36,9 +36,9 @@ copy_slurm_config() {
     echo `cat /etc/slurm/slurmdbd.conf`
     echo `cat /etc/slurm/cgroup.conf`
     # Strict permissions required by Slurm
-    chmod 600 /etc/slurm/slurm.conf || true
-    chmod 600 /etc/slurm/slurmdbd.conf || true
-    chmod 600 /etc/slurm/cgroup.conf || true
+    chmod 640 /etc/slurm/slurm.conf || true
+    chmod 640 /etc/slurm/slurmdbd.conf || true
+    chmod 640 /etc/slurm/cgroup.conf || true
   fi
 
     ## ensure var run slurm

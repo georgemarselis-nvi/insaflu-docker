@@ -32,9 +32,9 @@ copy_slurm_config() {
     chown -R slurm:slurm /etc/slurm
 
     # Strict permissions required by Slurm
-    chmod 644 /etc/slurm/slurm.conf || true
-    chmod 644 /etc/slurm/slurmdbd.conf || true
-    chmod 644 /etc/slurm/cgroup.conf || true
+    chmod 640 /etc/slurm/slurm.conf || true
+    chmod 640 /etc/slurm/slurmdbd.conf || true
+    chmod 640 /etc/slurm/cgroup.conf || true
   fi
 }
 
