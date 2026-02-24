@@ -290,6 +290,7 @@ services:
       context: components/insaflu-ubuntu/.
       args:
         SLURM_TAG: ${SLURM_TAG}
+        APP_USER: ${APP_USER}
     container_name: insaflu-ubuntu
     image: ${USERNAME_IMAGE}:${IMAGE}
     hostname: insaflu

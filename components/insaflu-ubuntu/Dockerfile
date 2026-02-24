@@ -9,6 +9,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG RUNLEVEL=1
 ARG GOSU_VERSION=1.17
 ARG SLURM_TAG
+ARG APP_USER
 ARG SHARED_USER_NAME=user
 ARG SHARED_USER_UID=1000
 ARG SHARED_GROUP_NAME=user
@@ -57,5 +58,7 @@ RUN echo 'PATH="/opt/sge/bin:/opt/sge/bin/lx-amd64:/insaflu_web/commands/:/softw
 RUN echo 'export PATH="/opt/sge/bin:/opt/sge/bin/lx-amd64:/insaflu_web/commands/:/software/kallisto_linux-v0.43.1/:/software/blast+/2.16.0/ncbi-blast-2.16.0+-src/c++/ReleaseMT/bin:${PATH}"' >> /etc/apache2/envvars
 RUN echo 'export USER=${APP_USER}' >> /etc/apache2/envvars
 RUN echo 'export HOME=/home/${APP_USER}' >> /etc/apache2/envvars
+
+USER ${APP_USER}
 
 ENTRYPOINT ["/entrypoint.sh"]
