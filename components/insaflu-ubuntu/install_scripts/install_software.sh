@@ -157,7 +157,7 @@ cd /software && git clone --branch v3.2  https://github.com/tseemann/snippy.git 
 && chmod a+x /software/snippy/binaries/linux/ivar \
 && mv /tmp_install/software/snippy/bedtools /software/snippy/binaries/linux/ \
 && chmod a+x /software/snippy/binaries/linux/bedtools \
-&& mv /tmp_install/software/snippy/run_check_consensus /software/snippy/binaries/linux/ \
+&& mv /tmp_install/software/snippy/run_check_consensus /software/snippy/binaries/linux/ \ 
 && chmod a+x /software/snippy/binaries/linux/run_check_consensus \
 && mv /tmp_install/software/snippy/snippy /software/snippy/bin/ \
 && chmod a+x /software/snippy/bin/snippy \

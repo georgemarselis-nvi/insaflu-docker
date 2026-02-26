@@ -13,3 +13,5 @@ ln -s /software/infernal/src/cmpress /usr/local/bin/cmpress
 ln -s /software/miniconda2/envs/tbl2asn/bin/tbl2asn /usr/local/bin/tbl2asn
 ln -s /software/miniconda2/envs/tbl2asn/bin/real-tbl2asn /usr/local/bin/real-tbl2asn
 ln -s /software/hmmer/src/hmmscan /usr/local/bin/hmmscan
+ln -s /software/medaka/bin/medaka /usr/local/bin/medaka
+ln -s /usr/bin/python3 /usr/bin/python

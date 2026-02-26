@@ -59,7 +59,6 @@ if [ "$1" = "init_all" ]; then
         cp /insaflu_web/INSaFLU/env/insaflu.env /insaflu_web/INSaFLU/.env
     fi
 
-
     ### set all default insaflu data
     echo "---> Collect static data  ..."
     cd /insaflu_web/INSaFLU; /usr/bin/python3 manage.py collectstatic --noinput;
@@ -97,7 +96,7 @@ if [ "$1" = "init_all" ]; then
     echo "--->  Set up TELEVIR software  ..."
     if [ -e /televir/mngs_benchmark/utility_docker.db ]; then
         cd /insaflu_web/INSaFLU; /usr/bin/python3 manage.py generate_default_trees; #/usr/bin/python3 manage.py register_references_on_file -o /tmp/insaFlu/register
-        cd /data/tmp/ && cp /insaflu_web/commands/register_televir_refs.sh . && sbatch register_televir_refs.sh
+        cd /data/tmp/ && cp /insaflu_web/commands/register_televir_refs.sh . && gosu flu_user sbatch register_televir_refs.sh
         cd /insaflu_web/INSaFLU; 
     fi
     

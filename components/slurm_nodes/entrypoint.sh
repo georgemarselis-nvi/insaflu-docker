@@ -51,7 +51,6 @@ copy_slurm_config() {
 if [ "$1" = "slurmd" ]
 then
 
-
     chown -R flu_user:slurm /software
     echo "---> Starting the MUNGE Authentication service (munged) ..."
     move_munge_key
@@ -66,14 +65,6 @@ then
         sleep 2
     done
     echo "-- slurmctld is now active ..."
-    echo "---> create user and group for slurmd ..."
-    #APP_USER=flu_user
-    #APP_GROUP=flu_user
-    #APP_HOME=/home/$APP_USER
-    #sacctmgr create account -i $APP_USER
-    #sacctmgr create user -i $APP_USER
-    #sacctmgr modify user $APP_USER set adminlevel=ALL
-    #sacctmgr modify user $APP_USER set defaultaccount=$APP_USER
 
     ### need to link after the mount, otherwise all the data in "/insaflu_web/INSaFLU/env" is going to be masked (hided)
     if [ -f "/insaflu_web/INSaFLU/env/insaflu.env" ]; then

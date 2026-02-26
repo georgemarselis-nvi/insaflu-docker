@@ -59,6 +59,6 @@ RUN echo 'export PATH="/opt/sge/bin:/opt/sge/bin/lx-amd64:/insaflu_web/commands/
 RUN echo 'export USER=${APP_USER}' >> /etc/apache2/envvars
 RUN echo 'export HOME=/home/${APP_USER}' >> /etc/apache2/envvars
 
-USER ${APP_USER}
+#USER ${APP_USER}
 
 ENTRYPOINT ["/entrypoint.sh"]
