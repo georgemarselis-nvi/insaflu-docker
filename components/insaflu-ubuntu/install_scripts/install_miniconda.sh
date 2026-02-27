@@ -32,7 +32,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 mkdir -p /software/flumut
-mv /tmp_install/software/flumut /software/flumut && chmod +x /software/flumut/flumut.sh
+mv /tmp_install/software/flumut /software/ && chmod +x /software/flumut/flumut.sh
 
 # IRMA
 echo "Install IRMA"
@@ -41,7 +41,7 @@ if [ $? -ne 0 ]; then
     echo "Error installing IRMA"
     exit 1
 fi
-mv /tmp_install/software/irma /software/irma && chmod +x /software/irma/irma.sh
+mv /tmp_install/software/irma /software/ && chmod +x /software/irma/irma.sh
 
 # Nextstrain
 echo "Install Nextstrain"
