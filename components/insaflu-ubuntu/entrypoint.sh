@@ -73,14 +73,6 @@ if [ "$1" = "init_all" ]; then
     ### This s for televir
     chown -R APP_USER:slurm /insaflu_web/INSaFLU/static_all
 
-    ### set default files and settings, deploy using slurm
-    echo "---> Set default files and settings  ..."
-    echo APP_USER
-    mkdir -p /data/tmp && cd /data/tmp/;  chown -R APP_USER:slurm /data/;
-    cp /insaflu_web/commands/load_defaults.sh .
-    gosu flu_user sbatch load_defaults.sh
-    cd /insaflu_web/INSaFLU;
-
     ### some files/paths are made by "root" account and need to be accessed by "flu_user"
     ### It's done by tmpfiles.d
     rm -rf /tmp/insaFlu/*
@@ -91,6 +83,14 @@ if [ "$1" = "init_all" ]; then
     chmod -R 0777 /insaflu_web/INSaFLU/media
     chmod -R 0777 /insaflu_web/INSaFLU/static_all
     chmod -R 0777 /var/log/insaFlu
+
+    ### set default files and settings, deploy using slurm
+    echo "---> Set default files and settings  ..."
+    echo APP_USER
+    mkdir -p /data/tmp && cd /data/tmp/;  chown -R APP_USER:slurm /data/;
+    cp /insaflu_web/commands/load_defaults.sh .
+    gosu flu_user sbatch load_defaults.sh
+    cd /insaflu_web/INSaFLU;
 
     ## for televir
     echo "--->  Set up TELEVIR software  ..."

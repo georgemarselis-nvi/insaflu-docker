@@ -321,9 +321,9 @@ services:
       slurmctld:
         condition: service_started
       c1:
-        condition: service_healthy
-      c2: 
-        condition: service_healthy
+        condition: service_started
+      c2:
+        condition: service_started
     environment:
       - SGE_ROOT=/opt/sge
     ports:

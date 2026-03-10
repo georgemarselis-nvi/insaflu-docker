@@ -6,6 +6,10 @@
 #SBATCH --error=/data/tmp/error_files.out
 
 set -e
+source /etc/profile
+source ~/.bashrc
+
+echo `echo $PATH`
 
 if [ ! -e "/software/prokka/db/hmm/HAMAP.hmm.h3f" ]; then
     echo "---> Set prokka default databases  ..."
