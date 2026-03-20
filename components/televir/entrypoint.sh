@@ -8,10 +8,9 @@ if [ "$1" = "move" ]; then
     fi
     
     cd insaflu_web/TELEVIR
+    cp install_scripts/config.py /televir/mngs_benchmark/config.py
     
     /opt/venv/bin/python main.py --docker --envs --setup_conda --seqdl --soft --partial
-    
-    cp install_scripts/config.py /televir/mngs_benchmark/config.py
     
     chmod -R 0777 /televir/mngs_benchmark
     
