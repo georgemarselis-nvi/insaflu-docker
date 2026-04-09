@@ -101,7 +101,7 @@ services:
     hostname: televir
     restart: on-failure
     volumes:
-      - televir:/televir/mngs_benchmark
+      - televir:/opt/televir
     depends_on:
       - officer
     environment:
@@ -214,7 +214,7 @@ services:
       - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
       - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
       - insaflu-software:/software
-      - televir:/televir/mngs_benchmark
+      - televir:/opt/televir
       - var_log_insaflu:/var/log/insaFlu
       - tmp_insaflu:/tmp/insaFlu
       - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
@@ -258,7 +258,7 @@ services:
       - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
       - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
       - insaflu-software:/software
-      - televir:/televir/mngs_benchmark
+      - televir:/opt/televir
       - var_log_insaflu:/var/log/insaFlu
       - tmp_insaflu:/tmp/insaFlu
       - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
@@ -296,7 +296,7 @@ services:
     hostname: insaflu
     restart: "on-failure"
     volumes:
-      - televir:/televir/mngs_benchmark
+      - televir:/opt/televir
       - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
       - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
       - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env

@@ -8,9 +8,9 @@ SOURCE = (
 )
 # /home/bioinf/Desktop/METAGEN/depo
 # path to the directory where the databases will be stored.
-HOME = "/televir/mngs_benchmark/"
+HOME = "/opt/televir/"
 # path to the directory where the environments will be stored.
-ENVDIR = "/televir/mngs_benchmark/mngs_environments/"
+ENVDIR = "/opt/televir/environments/"
 # technology used to generate the database and deployment files. options: "illumina" or "nanopore".
 TECH = "nanopore"
 # path to the taxdump.tar.gz file.
