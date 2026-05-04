@@ -43,9 +43,14 @@ RUN apt-get update \
 
 
 RUN apt-get update && apt-get install -y bash-completion wget
+RUN apt-get update \
+    && apt-get install -y locales
+
 
 RUN echo "export LC_CTYPE=en_US.UTF-8" >> /home/${APP_USER}/.bashrc
 RUN echo "export LC_ALL=en_US.UTF-8" >> /home/${APP_USER}/.bashrc
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+RUN locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8
 
 RUN cat /tmp_install/configs/system_paths.sh >> /home/${APP_USER}/.bashrc
 RUN cat /tmp_install/configs/system_paths.sh >> /root/.bashrc
@@ -55,10 +60,6 @@ RUN cp /tmp_install/configs/system_paths.sh /etc/profile.d/
 #RUN echo 'PATH="/opt/sge/bin:/opt/sge/bin/lx-amd64:/insaflu_web/commands/:/software/kallisto_linux-v0.43.1/:/software/blast+/2.16.0/ncbi-blast-2.16.0+-src/c++/ReleaseMT/bin:${PATH}"' >> /root/.bashrc
 #RUN echo 'export PATH="/opt/sge/bin:/opt/sge/bin/lx-amd64:/insaflu_web/commands/:/software/kallisto_linux-v0.43.1/:/software/blast+/2.16.0/ncbi-blast-2.16.0+-src/c++/ReleaseMT/bin:${PATH}"' >> /etc/apache2/envvars
 
-
-RUN apt-get update \
-    && apt-get install -y locales \
-    && locale-gen en_US.UTF-8
 
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
