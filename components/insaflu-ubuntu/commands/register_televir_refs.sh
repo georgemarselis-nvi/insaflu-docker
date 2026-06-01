@@ -7,4 +7,7 @@
 
 
 /usr/bin/python3 /insaflu_web/INSaFLU/manage.py generate_default_trees
-/usr/bin/python3 /insaflu_web/INSaFLU/manage.py register_references_on_file --user_id 1 -o /tmp/insaFlu/register_references
+/usr/bin/python3 /insaflu_web/INSaFLU/manage.py register_references_on_file \
+--user_id 1 \
+-o /tmp/insaFlu/register_references \
+--force

@@ -93,26 +93,6 @@ services:
       start_period: 30s
 
 
-  # TELEVIR
-  televir-server:
-    build: components/televir/.
-    container_name: televir-server
-    image: ${USERNAME_IMAGE}:${TELEVIR_IMAGE}
-    hostname: televir
-    restart: on-failure
-    volumes:
-      - televir:/opt/televir
-    depends_on:
-      - officer
-    environment:
-      - SGE_ROOT=/opt/sge
-    tty: true
-    stdin_open: true
-    networks:
-      insaflu_ubuntu_net:
-    command: ["move"]
-
-
   mysql:
     image: mariadb:12
     hostname: mysql

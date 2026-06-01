@@ -125,11 +125,17 @@ If you want to perpetuate the changes in future updates of INSaFLU webserver you
 
 ## Change TELEVIR software install configuration
 
-TELEVIR is module that can be installed in INSaFLU. This module is used to detect viral sequences in metagenomic samples. The installation of this module is optional and can be done with the command "./up_televir.sh". The installation of this module can take several hours.
+TELEVIR is module that can be installed in INSaFLU. This module is used to detect viral sequences in metagenomic samples. The installation of this module is optional and can take several hours.
 
-TELEVIR offers a modular workflow framework, where each module can have multiple software available. TELEVIR software installation, with associated databases in the case of detection or host depletion, is controlled via the file `components/televir/config_install.py` by setting the individual variables to `True` or `False`.
+TELEVIR software installation, with associated databases in the case of detection or host depletion, has been outsourced the project [TELEVIR](https://github.com/SantosJGND/TELEVIR). after download, just run the installation command while setting the installation volume to match root directory of INSaFLU data found in the `.env` file in this directory (e.g., /home/xpto/INSaFLU/data). _i.e._:
 
-To configure installation, modify the file `components/televir/config_install.py` and set the variables to `True` or `False` according to the software you want to install. Then run the commands "./build.sh" and "./up_televir.sh" to install the software.
+```bash
+docker run \
+-v ${BASE_PATH_DATA}/televir:/opt/televir \
+televir move
+```
+
+See the README of TELEVIR for more details on the installation and configuration of TELEVIR software and databases.
 
 ### TELEVIR+
 
