@@ -10,6 +10,8 @@ INSaFLU (“INSide the FLU”) is a bioinformatics free web-based suite (https:/
 
 **Here, you can find how to easily set up your local INSaFLU instance.**
 
+The optional **ML API** component (`components/ml_api/`) serves ML models via FastAPI endpoints for TELEVIR threshold prediction and other ML tasks. Models are managed through MLflow and loaded into a runtime cache.
+
 ## Recommended minimal hardware requirements
 
 - Processor: 8 cores (4 minimal if only surveillance module is required);
@@ -130,6 +132,10 @@ TELEVIR is module that can be installed in INSaFLU. This module is used to detec
 TELEVIR software installation, with associated databases in the case of detection or host depletion, has been outsourced the project [TELEVIR](https://github.com/SantosJGND/TELEVIR). after download, just run the installation command while setting the installation volume to match root directory of INSaFLU data found in the `.env` file in this directory (e.g., /home/xpto/INSaFLU/data). _i.e._:
 
 ```bash
+git clone https://github.com/SantosJGND/TELEVIR.git
+
+cd TELEVIR
+
 docker run \
 -v ${BASE_PATH_DATA}/televir:/opt/televir \
 televir move
@@ -181,7 +187,10 @@ Recreating insaflu-server ... error
 Continue with the new image? [yN]y    	"Press 'y' to update the insaflu-ubuntu"
 ```
 
-:warning: Please, check if you have the variable TIMEZONE defined in ".env" file. You can check and example in ".env_temp".
+<div class="alert alert-block alert-warning">
+    <p><strong>Warning:</strong> Please, check if you have the variable TIMEZONE defined in ".env" file. You can check and example in ".env_temp".</p>
+
+</div>
 
 ## Update INSaFLU to last version
 

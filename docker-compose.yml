@@ -9,6 +9,8 @@ volumes:
   etc_munge:
   tmp_insaflu:
   munge_run:
+  mlflow_data:
+  mlflow_artifacts:
 
   pg_data:
     driver: local-persist
@@ -92,9 +94,8 @@ services:
       retries: 5
       start_period: 30s
 
-
   mysql:
-    image: mariadb:12
+    image: mariadb:12.3.2
     hostname: mysql
     container_name: mysql
     environment:
@@ -314,3 +315,45 @@ services:
       slurm-network:
       insaflu_ubuntu_net:
     command: ["init_all"]
+
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.12.0
+    container_name: mlflow-server
+
+    ports:
+      - "5000:5000"
+
+    volumes:
+      - mlflow_data:/mlflow
+      - mlflow_artifacts:/mlartifacts
+
+    command: >
+      mlflow server
+        --host 0.0.0.0
+        --port 5000
+        --backend-store-uri sqlite:////mlflow/mlflow.db
+        --default-artifact-root file:///mlartifacts
+        --no-serve-artifacts
+        --allowed-hosts "*"
+        --cors-allowed-origins "*"
+
+  ml_app:
+    build: components/ml_api/.
+    container_name: insaflu-ml-app
+    hostname: ml_app
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - mlflow
+
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MLFLOW_EXPERIMENT=INSaFLU_ML_API
+
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - mlflow_artifacts:/mlartifacts
