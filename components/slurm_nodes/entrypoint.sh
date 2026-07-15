@@ -56,7 +56,7 @@ then
     move_munge_key
     copy_slurm_config
     #service munge start
-    #gosu munge munged --pid-file=/var/run/munge/munged.pid
+    gosu munge munged --pid-file=/var/run/munge/munged.pid
     echo "---> Waiting for slurmctld to become active before starting slurmd..."
     
     until 2>/dev/null >/dev/tcp/slurmctld/6817
@@ -76,25 +76,8 @@ then
         cp /insaflu_web/INSaFLU/env/insaflu.env /insaflu_web/INSaFLU/.env
     fi
     
-    echo "---> Registering node with SLURM cluster ..."
-    if [ -f "/scripts/node-register.sh" ]; then
-        chmod +x /scripts/node-register.sh
-        /scripts/node-register.sh
-    fi
-    
     echo "---> Starting the Slurm Node Daemon (slurmd) ..."
-    # Set up signal handlers for graceful shutdown
-    trap '/scripts/node-deregister.sh; exit 0' SIGTERM SIGINT
     exec /usr/sbin/slurmd -Dvvv
-
-fi
-
-exec "$@"
-"
-    # Set up signal handlers for graceful shutdown
-    trap '/scripts/node-deregister.sh; exit 0' SIGTERM SIGINT
-    exec /usr/sbin/slurmd -Dvvv
-
 
 fi
 

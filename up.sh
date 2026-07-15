@@ -29,18 +29,17 @@ fi
 # image name
 export IMAGE=insaflu-ubuntu
 
-echo "Starting INSaFLU services (without compute nodes)..."
+echo "Starting INSaFLU services ..."
 docker compose up ${IMAGE}
 
 echo ""
 echo "==================================================================="
-echo "INSaFLU is now running without compute nodes."
-echo "To add compute nodes dynamically, use:"
-echo "  ./scale-up.sh [number_of_nodes]"
+echo "INSaFLU is now running, along with its Slurm cluster (c1/c2 compute"
+echo "nodes are started automatically as dependencies of ${IMAGE})."
 echo ""
-echo "To remove compute nodes, use:"
-echo "  ./scale-down.sh [number_of_nodes]"
+echo "To check cluster/container status:"
+echo "  ./cluster-status.sh"
 echo ""
-echo "To start with initial nodes, run:"
-echo "  ./scale-up.sh 2"
+echo "To stop everything:"
+echo "  ./stop.sh"
 echo "==================================================================="

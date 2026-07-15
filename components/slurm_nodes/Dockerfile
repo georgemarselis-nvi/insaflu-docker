@@ -1,5 +1,5 @@
-
-FROM slurm-runtime:slurm-25.05
+ARG SLURM_TAG=25.05.3
+FROM slurm-runtime:${SLURM_TAG}
 USER root
 
 LABEL org.opencontainers.image.source="https://github.com/giovtorres/slurm-docker-cluster" \

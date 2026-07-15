@@ -1,14 +1,11 @@
 ### places where the most important data is
 volumes:
-  etc_slurm:
   slurm_jobdir:
   var_log_insaflu:
   var_log_slurm:
   var_lib_mysql:
   insaflu-software:
-  etc_munge:
   tmp_insaflu:
-  munge_run:
   mlflow_data:
   mlflow_artifacts:
 
@@ -158,7 +155,6 @@ services:
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
       - slurm_jobdir:/data:rw
       - var_log_slurm:/var/log/slurm:rw
-      - munge_run:/run/munge
     expose:
       - "6817"
     depends_on:
@@ -199,7 +195,6 @@ services:
       - var_log_insaflu:/var/log/insaFlu
       - tmp_insaflu:/tmp/insaFlu
       - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
-      - munge_run:/run/munge
     expose:
       - "6818"
     depends_on:
@@ -243,7 +238,6 @@ services:
       - var_log_insaflu:/var/log/insaFlu
       - tmp_insaflu:/tmp/insaFlu
       - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
-      - munge_run:/run/munge
     expose:
       - "6818"
     depends_on:
@@ -289,7 +283,6 @@ services:
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
       - var_log_insaflu:/var/log/insaFlu
       - tmp_insaflu:/tmp/insaFlu
-      - munge_run:/run/munge
     labels:
       deck-chores.update-pangolin.command: sh -c "/software/update_pangolin.sh"
       # weekly, daily, hourly, every minute and every second.
