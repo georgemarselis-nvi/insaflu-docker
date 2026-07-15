@@ -1,64 +1,94 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
 
 
-class TelevirValidationThresholdRequest(BaseModel):
-    classifiers: List[str] = Field(..., description="List of classifiers to use for prediction")
-    taxa: List[str] = Field(..., description="List of taxa to consider for prediction")
-    taxon_hits: List[int] = Field(..., description="List of taxon hits corresponding to the taxa")
-    kurtosis: float = Field(..., description="Kurtosis value of the distribution")
-    skewness: float = Field(..., description="Skewness value of the distribution")
-    mean: float = Field(..., description="Mean value of the distribution")
-    median: float = Field(..., description="Median value of the distribution")
-    std_dev: float = Field(..., description="Standard deviation of the distribution")
-
-    def to_array(self):
-        """
-        Convert request data into a flat feature array for model prediction.
-        Expects the model to handle variable-length taxon_hits via fixed-width truncation/padding.
-        """
-        features = []
-        features.append(self.kurtosis)
-        features.append(self.skewness)
-        features.append(self.mean)
-        features.append(self.median)
-        features.append(self.std_dev)
-        features.extend(self.taxon_hits)
-        return features
+class RecallCutoffFromTableRow(BaseModel):
+    taxid: int
+    total_uniq_reads: float
+    best_match_is_best: bool = False
 
 
-class ThresholdValidationResult(BaseModel):
-    predicted_threshold: float = Field(..., description="Predicted TELEVIR mapping threshold")
+class RecallCutoffFromTableRequest(BaseModel):
+    model: str = "order_recall_gp_clf"
+    rows: list[RecallCutoffFromTableRow]
+    target_recall: float | None = None
+    confidence: float | None = None
+
+
+class RecallCutoffResult(BaseModel):
+    predicted_cutoff: float = Field(..., description="Predicted recall cutoff fraction (target_percentile)")
+    predicted_recall_at_cutoff: float = Field(
+        ..., description="Predicted recall value at the predicted cutoff fraction"
+    )
+    target_recall: float | None = Field(None, description="Target recall τ that was applied")
     confidence_score: float = Field(..., description="Confidence score of the prediction")
-    model_version: Optional[str] = Field(None, description="Version of the model used")
-    model_stage: Optional[str] = Field(None, description="MLflow stage of the model used")
+    model_version: str | None = Field(None, description="Version of the model used")
+    model_stage: str | None = Field(None, description="MLflow stage of the model used")
+
+
+CLUSTERING_TAXON_ORDER = [
+    "Baculoviridae",
+    "Coronaviridae",
+    "Flaviviridae",
+    "Herelleviridae",
+    "Orthoherpesviridae",
+    "Papillomaviridae",
+    "Peduoviridae",
+    "Picornaviridae",
+    "Rhabdoviridae",
+    "Schitoviridae",
+    "Straboviridae",
+    "unclassified",
+]
 
 
 class TelevirClusteringThresholdRequest(BaseModel):
-    classifiers: List[str] = Field(..., description="List of classifiers to use for prediction")
-    taxa: List[str] = Field(..., description="List of taxa to consider for prediction")
-    taxon_hits: List[int] = Field(..., description="List of taxon hits corresponding to the taxa")
+    classifiers: list[str] = Field(..., description="List of classifiers to use for prediction")
+    taxa: list[str] = Field(..., description="List of taxa to consider for prediction")
+    taxon_hits: list[float] = Field(
+        default_factory=lambda: [0.0] * len(CLUSTERING_TAXON_ORDER),
+        description="Taxonomic proportion values in CLUSTERING_TAXON_ORDER order (12 values)",
+    )
     taxonomic_diversity: float = Field(..., description="Taxonomic diversity of the sample")
     n_leaves: float = Field(..., description="Number of leaves in the cluster")
     proportion_shared_hits: float = Field(..., description="Proportion of hits shared with other clusters")
     proportion_unique_hits: float = Field(..., description="Proportion of hits unique to the cluster")
 
-    def to_array(self):
-        """
-        Convert request data into a flat feature array for model prediction.
-        Expects the model to handle variable-length taxon_hits via fixed-width truncation/padding.
-        """
-        features = []
-        features.append(self.taxonomic_diversity)
-        features.append(self.n_leaves)
-        features.append(self.proportion_shared_hits)
-        features.append(self.proportion_unique_hits)
-        features.extend(self.taxon_hits)
-        return features
+    def _feature_map(self):
+        d = {}
+        d["taxonomic_diversity"] = self.taxonomic_diversity
+        d["n_leaves"] = self.n_leaves
+        d["proportion_shared_hits"] = self.proportion_shared_hits
+        d["proportion_unique_hits"] = self.proportion_unique_hits
+        for name, val in zip(CLUSTERING_TAXON_ORDER, self.taxon_hits):
+            d[name] = val
+        return d
+
+    def to_array(self, feature_names=None):
+        if feature_names is None:
+            return list(self._feature_map().values())
+        fm = self._feature_map()
+        return [fm[name] for name in feature_names]
 
 
 class ClusteringThresholdResult(BaseModel):
     is_cluster: bool = Field(..., description="Indicates whether the cluster is valid or not")
     confidence_score: float = Field(..., description="Confidence score of the prediction")
-    model_version: Optional[str] = Field(None, description="Version of the model used")
-    model_stage: Optional[str] = Field(None, description="MLflow stage of the model used")
+    model_version: str | None = Field(None, description="Version of the model used")
+    model_stage: str | None = Field(None, description="MLflow stage of the model used")
+
+
+class CompositionStopTraversalRequest(BaseModel):
+    model: str = "xgb"
+    tax_level: str = "order"
+    features: dict[str, float] = Field(
+        ...,
+        description="Feature dict — keys matching training column names, values are feature values at the node",
+    )
+
+
+class CompositionStopTraversalResult(BaseModel):
+    stop_traversal: bool = Field(..., description="Whether traversal should stop at this node")
+    probability: float = Field(..., description="Probability of the stop_traversal class")
+    confidence_score: float = Field(..., description="Confidence score of the prediction")
+    model_version: str | None = Field(None, description="Version of the model used")
+    model_stage: str | None = Field(None, description="MLflow stage of the model used")

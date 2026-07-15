@@ -1,50 +1,54 @@
 import sys
-import joblib
 from pathlib import Path
+
+import joblib
 
 sys.path.append(str(Path(__file__).parent.parent))
 import mlflow
-
-from config import get_logger, MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT, PROJECT_MODELS, registry_name
+from config import MLFLOW_EXPERIMENT, MLFLOW_TRACKING_URI, ModelFile, get_logger, registry_name
+from registry import all_model_keys
 
 logger = get_logger(__name__)
 
-MODELS_DIR = Path(__file__).parent.parent / "models"
+MODELS_DIR = Path(__file__).parent / "models"
+
 
 def _get_client() -> "MlflowClient":
     from mlflow.tracking import MlflowClient
+
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     return MlflowClient()
 
 
 def transition_to_production(registered_name, version):
     client = _get_client()
-    client.transition_model_version_stage(
-        name=registered_name,
-        version=version,
-        stage="Production"
-    )
+    client.transition_model_version_stage(name=registered_name, version=version, stage="Production")
     logger.info(f"{registered_name} v{version} → Production")
     for v in client.search_model_versions(f"name='{registered_name}'"):
         if v.version != version and v.current_stage == "Production":
-            client.transition_model_version_stage(
-                name=registered_name,
-                version=v.version,
-                stage="Archived"
-            )
+            client.transition_model_version_stage(name=registered_name, version=v.version, stage="Archived")
             logger.info(f"{registered_name} v{v.version} → Archived")
+
+
+def _unwrap_model(bundle):
+    """Extract the inner sklearn-compatible model from a dict bundle or pass through."""
+    if isinstance(bundle, dict):
+        return bundle.get("pipeline") or bundle.get("model") or bundle
+    return bundle
 
 
 def bootstrap_model(model_type):
     import mlflow
     import mlflow.sklearn
 
-    model_path = MODELS_DIR / f"{model_type}.joblib"
+    bundle_name = ModelFile.project_files.get(model_type, f"{model_type}.joblib")
+    model_path = MODELS_DIR / bundle_name
     if not model_path.exists():
-        logger.warning(f"No .joblib found for {model_type} at {model_path}")
+        logger.warning(f"No model file found for {model_type} at {model_path}")
         return False
 
-    model = joblib.load(str(model_path))
+    bundle = joblib.load(str(model_path))
+    model = _unwrap_model(bundle)
     registered_name = registry_name(model_type)
 
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
@@ -68,11 +72,11 @@ def bootstrap_model(model_type):
 def main():
     logger.info("Bootstrapping existing models into MLflow Registry...")
     success = 0
-    for mt in PROJECT_MODELS:
+    for mt in all_model_keys():
         if bootstrap_model(mt):
             success += 1
-            
-    logger.info(f"Bootstrapped {success}/{len(PROJECT_MODELS)} models")
+
+    logger.info(f"Bootstrapped {success}/{len(all_model_keys())} models")
     if success == 0:
         logger.warning("No models were bootstrapped. Train models first!")
         sys.exit(1)

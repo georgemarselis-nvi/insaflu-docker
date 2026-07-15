@@ -1,34 +1,32 @@
-from fastapi import FastAPI, HTTPException, Response
-from pydantic import BaseModel
-from typing import Optional, List
-from ml_api.validation.schemas import TelevirValidationThresholdRequest, TelevirClusteringThresholdRequest, ClusteringThresholdResult, ThresholdValidationResult
 import time
-from monitoring import log_prediction, get_metrics
-from registry import load_and_cache, get_cached_model, invalidate_cache, cache_status
-from config import registry_name, PROJECT_MODELS, get_logger
+
+import numpy as np
+import pandas as pd
+from config import get_logger, registry_name
+from fastapi import FastAPI, HTTPException, Response
+from monitoring import log_prediction
+from registry import all_model_keys, cache_status, discover_models, get_cached_model, invalidate_cache, load_and_cache
+from validation.schemas import (
+    CompositionStopTraversalRequest,
+    CompositionStopTraversalResult,
+    RecallCutoffFromTableRequest,
+    RecallCutoffResult,
+    TelevirClusteringThresholdRequest,
+)
 
 logger = get_logger(__name__)
 
 app = FastAPI(title="INSaFLU ML API", description="API for INSaFLU machine learning models", version="1.0.0")
 
 
-class PredictRequest(BaseModel):
-    features: List[float]
-
-
-class PredictResponse(BaseModel):
-    prediction: float
-    confidence_score: float
-    model_version: Optional[str] = None
-    model_stage: Optional[str] = None
-
-
 @app.on_event("startup")
 def warmup_cache():
-    for mt in PROJECT_MODELS:
+    for mt in all_model_keys():
         try:
             load_and_cache(mt)
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             logger.warning(f"Failed to preload '{mt}': {e}")
     logger.info(f"Cache warmup complete ({cache_status()})")
 
@@ -48,7 +46,7 @@ def reload_all():
     invalidate_cache()
     count = 0
     errors = []
-    for mt in PROJECT_MODELS:
+    for mt in all_model_keys():
         try:
             load_and_cache(mt)
             count += 1
@@ -59,10 +57,11 @@ def reload_all():
 
 @app.post("/reload/{model_type}")
 def reload_one(model_type: str):
-    if model_type not in PROJECT_MODELS:
+    known = all_model_keys()
+    if model_type not in known:
         raise HTTPException(
             status_code=404,
-            detail=f"Unknown model type: '{model_type}'. Available: {PROJECT_MODELS}",
+            detail=f"Unknown model type: '{model_type}'. Available: {known}",
         )
     invalidate_cache(model_type)
     try:
@@ -72,92 +71,151 @@ def reload_one(model_type: str):
     return {"reloaded": model_type}
 
 
-@app.post("/predict/{model_type}", response_model=PredictResponse)
-def predict_generic(model_type: str, request: PredictRequest, response: Response):
-    if model_type not in PROJECT_MODELS:
+def _interpolate_recall_at_cutoff(cutoff, raw_recalls, n_divisions):
+    """Interpolate recall at a given cutoff fraction using per-division predictions."""
+    fractions = np.arange(1, n_divisions + 1) / n_divisions
+    for i in range(n_divisions):
+        if cutoff <= fractions[i]:
+            if i == 0:
+                return float(raw_recalls[i] * (cutoff / fractions[i]))
+            f_low, f_high = fractions[i - 1], fractions[i]
+            r_low, r_high = raw_recalls[i - 1], raw_recalls[i]
+            if f_high == f_low:
+                return float(r_high)
+            return float(r_low + (cutoff - f_low) * (r_high - r_low) / (f_high - f_low))
+    return float(raw_recalls[-1])
+
+
+_GENUS_ALIASES = {"genus", "g", "genera"}
+
+
+def _composite_key(tax_level: str, category: str, variant: str) -> str:
+    if tax_level in _GENUS_ALIASES:
+        tax_level = "genus"
+    return f"{tax_level}_{category}_{variant}"
+
+
+@app.post("/predict_recall_cutoff_from_table", response_model=RecallCutoffResult)
+def predict_recall_cutoff_from_table(request: RecallCutoffFromTableRequest, response: Response):
+    start = time.time()
+    try:
+        bundle, version_info = get_cached_model(request.model)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    transformer = bundle.get("transformer")
+    if transformer is None:
         raise HTTPException(
-            status_code=404,
-            detail=f"Unknown model type: '{model_type}'. Available: {PROJECT_MODELS}",
+            503, detail=f"Model '{request.model}' has no transformer — not trained via the new pipeline"
         )
-    start = time.time()
-    try:
-        model, version_info = get_cached_model(model_type)
-    except RuntimeError as e:
-        raise HTTPException(status_code=503, detail=str(e))
 
-    X = request.features
-    prediction = model.predict([X])[0]
-    confidence_score = 0.9
+    df = pd.DataFrame([r.model_dump() for r in request.rows])
+    tax_level = getattr(transformer, "tax_level", None)
+    if tax_level and tax_level not in df.columns:
+        raise HTTPException(
+            422,
+            detail=f"Model requires tax_level column '{tax_level}', "
+                   f"but it is not present in input data. "
+                   f"Available columns: {list(df.columns)}",
+        )
+
+    pipeline = bundle.get("pipeline") or bundle.get("model")
+    if pipeline is None:
+        raise HTTPException(503, detail=f"Model '{request.model}' has no pipeline")
+
+    features = transformer.transform(df)
+    feat_cols = bundle.get("feature_names", transformer.get_feature_names_out())
+    X = features[feat_cols]
+
+    tau = request.target_recall
+    xc = request.confidence
+
+    if hasattr(pipeline, "predict_raw"):
+        predicted_cutoff = pipeline.predict(X.values, tau=tau, x_thresh=xc)[0]
+    else:
+        predicted_cutoff = pipeline.predict(X.values)[0]
+
+    predicted_recall_at_cutoff = 0.0
+    if hasattr(pipeline, "predict_raw") and hasattr(pipeline, "n_divisions"):
+        raw = pipeline.predict_raw(X.values)
+        recall_indices = getattr(pipeline, "recall_indices_", None)
+        if recall_indices is not None:
+            raw_recalls = raw[0, recall_indices]
+        else:
+            raw_recalls = raw[0]
+        predicted_recall_at_cutoff = _interpolate_recall_at_cutoff(predicted_cutoff, raw_recalls, pipeline.n_divisions)
+
     latency_ms = (time.time() - start) * 1000
     log_prediction(
-        model_version=f"{registry_name(model_type)} v{version_info.get('version', '?')}",
-        prediction=float(prediction),
+        model_version=f"{registry_name(request.model)} v{version_info.get('version', '?')}",
+        prediction=float(predicted_cutoff),
         latency_ms=latency_ms,
     )
 
     response.headers["X-Model-Version"] = str(version_info.get("version", ""))
     response.headers["X-Model-Stage"] = str(version_info.get("stage", ""))
-    return PredictResponse(
-        prediction=float(prediction),
+    return RecallCutoffResult(
+        predicted_cutoff=float(predicted_cutoff),
+        predicted_recall_at_cutoff=predicted_recall_at_cutoff,
+        target_recall=tau,
+        confidence_score=0.9,
+        model_version=str(version_info.get("version")),
+        model_stage=version_info.get("stage"),
+    )
+
+
+@app.post("/predict_composition_stop_traversal", response_model=CompositionStopTraversalResult)
+def predict_composition_stop_traversal(request: CompositionStopTraversalRequest, response: Response):
+    start = time.time()
+    variant_key = _composite_key(request.tax_level, "composition", request.model)
+    try:
+        bundle, version_info = get_cached_model(variant_key)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    pipeline = bundle.get("pipeline") or bundle.get("model")
+    if pipeline is None:
+        raise HTTPException(503, detail="Composition model bundle missing 'pipeline' or 'model'")
+    fn = bundle.get("feature_names")
+    if fn is None and hasattr(pipeline, "feature_names_in_"):
+        fn = pipeline.feature_names_in_
+    if fn is None and hasattr(pipeline, "feature_names_"):
+        fn = pipeline.feature_names_
+    if isinstance(fn, np.ndarray):
+        fn = fn.tolist()
+
+    if fn:
+        filled = {**{name: 0.0 for name in fn}, **request.features}
+        X = pd.DataFrame([filled])
+    else:
+        X = pd.DataFrame([request.features])
+
+    pred = pipeline.predict(X)[0]
+    proba = pipeline.predict_proba(X)[0]
+    confidence_score = float(max(proba))
+
+    latency_ms = (time.time() - start) * 1000
+    log_prediction(
+        model_version=f"{registry_name('composition')} v{version_info.get('version', '?')}",
+        prediction=float(pred),
+        latency_ms=latency_ms,
+    )
+
+    response.headers["X-Model-Version"] = str(version_info.get("version", ""))
+    response.headers["X-Model-Stage"] = str(version_info.get("stage", ""))
+    return CompositionStopTraversalResult(
+        stop_traversal=bool(pred),
+        probability=float(proba[1]),
         confidence_score=confidence_score,
         model_version=str(version_info.get("version")),
         model_stage=version_info.get("stage"),
     )
 
 
-@app.get("/predict_televir_threshold", response_model=ThresholdValidationResult)
-def predict_televir_mapping_threshold(request: TelevirValidationThresholdRequest, response: Response):
-    start = time.time()
-    model_type = "televir_mapping_threshold"
-    try:
-        model, version_info = get_cached_model(model_type)
-    except RuntimeError as e:
-        raise HTTPException(status_code=503, detail=str(e))
-
-    X = request.to_array()
-    predicted_threshold = model.predict([X])[0]
-    confidence_score = 0.9
-    latency_ms = (time.time() - start) * 1000
-    log_prediction(
-        model_version=f"{registry_name(model_type)} v{version_info.get('version', '?')}",
-        prediction=float(predicted_threshold),
-        latency_ms=latency_ms,
-    )
-
-    response.headers["X-Model-Version"] = str(version_info.get("version", ""))
-    response.headers["X-Model-Stage"] = str(version_info.get("stage", ""))
-    return ThresholdValidationResult(
-        predicted_threshold=float(predicted_threshold),
-        confidence_score=confidence_score,
-        model_version=str(version_info.get("version")),
-        model_stage=version_info.get("stage"),
-    )
-
-
-@app.get("/predict_televir_clustering_threshold", response_model=ClusteringThresholdResult)
-def predict_televir_clustering_threshold(request: TelevirClusteringThresholdRequest, response: Response):
-    start = time.time()
-    model_type = "televir_clustering"
-    try:
-        model, version_info = get_cached_model(model_type)
-    except RuntimeError as e:
-        raise HTTPException(status_code=503, detail=str(e))
-
-    X = request.to_array()
-    prediction = model.predict([X])[0]
-    confidence_score = 0.85
-    latency_ms = (time.time() - start) * 1000
-    log_prediction(
-        model_version=f"{registry_name(model_type)} v{version_info.get('version', '?')}",
-        prediction=float(prediction),
-        latency_ms=latency_ms,
-    )
-
-    response.headers["X-Model-Version"] = str(version_info.get("version", ""))
-    response.headers["X-Model-Stage"] = str(version_info.get("stage", ""))
-    return ClusteringThresholdResult(
-        is_cluster=bool(prediction),
-        confidence_score=confidence_score,
-        model_version=str(version_info.get("version")),
-        model_stage=version_info.get("stage"),
+@app.post("/predict_televir_clustering_threshold")
+def predict_televir_clustering_threshold(request: TelevirClusteringThresholdRequest):
+    raise HTTPException(
+        status_code=501,
+        detail="televir_clustering model is deprecated and no longer available. "
+               "The clustering_xgb_bundle.pkl model artifact has been removed.",
     )
