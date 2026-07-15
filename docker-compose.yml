@@ -122,6 +122,7 @@ services:
     hostname: slurmdbd
     volumes:
       - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
+      - ./components/slurm_master/configs/slurmdbd/slurmdbd.conf:/run/secrets/slurm/slurmdbd.conf:ro
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
@@ -184,7 +185,7 @@ services:
     container_name: c1
     privileged: true
     volumes:
-      - ./components/slurm_nodes/configs/slurm:/run/secrets/slurm:ro
+      - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
       - slurm_jobdir:/data 
       - var_log_slurm:/var/log/slurm
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
@@ -227,7 +228,7 @@ services:
     container_name: c2
     privileged: true
     volumes:
-      - ./components/slurm_nodes/configs/slurm:/run/secrets/slurm:ro
+      - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
       - slurm_jobdir:/data 
       - var_log_slurm:/var/log/slurm
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
@@ -279,7 +280,7 @@ services:
       - insaflu-ubuntu-log-httpd:/var/log/httpd
       - insaflu-software:/software
       - slurm_jobdir:/data
-      - ./components/insaflu-ubuntu/configs/slurm:/run/secrets/slurm:ro
+      - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
       - var_log_insaflu:/var/log/insaFlu
       - tmp_insaflu:/tmp/insaFlu
