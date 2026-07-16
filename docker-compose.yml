@@ -264,59 +264,6 @@ services:
       start_period: 30s
 
 
-  # insaflu
-  # password and database login are defined in components/insaflu/configs/insaflu.env
-  insaflu-ubuntu:
-    build:
-      context: components/insaflu-ubuntu/.
-      args:
-        SLURM_TAG: ${SLURM_TAG}
-        APP_USER: ${APP_USER}
-    container_name: insaflu-ubuntu
-    image: ${USERNAME_IMAGE}:${IMAGE}
-    hostname: insaflu
-    restart: "on-failure"
-    volumes:
-      - televir:/opt/televir
-      - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
-      - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
-      - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
-      - insaflu-ubuntu-log-insaflu:/var/log/insaFlu
-      - insaflu-ubuntu-log-httpd:/var/log/httpd
-      - insaflu-software:/software
-      - slurm_jobdir:/data
-      - ./components/insaflu-ubuntu/configs/slurm:/run/secrets/slurm:ro
-      - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
-      - var_log_insaflu:/var/log/insaFlu
-      - tmp_insaflu:/tmp/insaFlu
-      - munge_run:/run/munge
-    labels:
-      deck-chores.update-pangolin.command: sh -c "/software/update_pangolin.sh"
-      # weekly, daily, hourly, every minute and every second.
-      deck-chores.update-pangolin.interval: hourly
-    depends_on:
-      db_insaflu:
-        condition: service_healthy
-      officer:
-        condition: service_healthy
-      slurmctld:
-        condition: service_started
-      c1:
-        condition: service_started
-      c2:
-        condition: service_started
-    environment:
-      - SGE_ROOT=/opt/sge
-    ports:
-      - "${APP_PORT}:80"
-    tty: true
-    stdin_open: true
-    networks:
-      slurm-network:
-      insaflu_ubuntu_net:
-    command: ["init_all"]
-
-
   mlflow:
     image: ghcr.io/mlflow/mlflow:v3.12.0
     container_name: mlflow-server
@@ -357,3 +304,69 @@ services:
       - ./logs:/app/logs
       - ./data:/app/data
       - mlflow_artifacts:/mlartifacts
+    
+    networks:
+      - slurm-network
+      - insaflu_ubuntu_net
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -X GET 'http://localhost:8000/health' | grep '\"status\":\"ok\"' >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 10s
+
+  # insaflu
+  # password and database login are defined in components/insaflu/configs/insaflu.env
+  insaflu-ubuntu:
+    build:
+      context: components/insaflu-ubuntu/.
+      args:
+        SLURM_TAG: ${SLURM_TAG}
+        APP_USER: ${APP_USER}
+    container_name: insaflu-ubuntu
+    image: ${USERNAME_IMAGE}:${IMAGE}
+    hostname: insaflu
+    restart: "on-failure"
+    volumes:
+      - televir:/opt/televir
+      - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
+      - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
+      - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
+      - insaflu-ubuntu-log-insaflu:/var/log/insaFlu
+      - insaflu-ubuntu-log-httpd:/var/log/httpd
+      - insaflu-software:/software
+      - slurm_jobdir:/data
+      - ./components/insaflu-ubuntu/configs/slurm:/run/secrets/slurm:ro
+      - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
+      - var_log_insaflu:/var/log/insaFlu
+      - tmp_insaflu:/tmp/insaFlu
+      - munge_run:/run/munge
+    labels:
+      deck-chores.update-pangolin.command: sh -c "/software/update_pangolin.sh"
+      # weekly, daily, hourly, every minute and every second.
+      deck-chores.update-pangolin.interval: hourly
+    depends_on:
+      ml_app:
+        condition: service_healthy
+      db_insaflu:
+        condition: service_healthy
+      officer:
+        condition: service_healthy
+      slurmctld:
+        condition: service_started
+      c1:
+        condition: service_started
+      c2:
+        condition: service_started
+    environment:
+      - SGE_ROOT=/opt/sge
+    ports:
+      - "${APP_PORT}:80"
+    tty: true
+    stdin_open: true
+    networks:
+      slurm-network:
+      insaflu_ubuntu_net:
+    command: ["init_all"]
+

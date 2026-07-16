@@ -1,6 +1,6 @@
 # INSaFLU Docker — Git Activity Summary
 
-**Period:** Jun 2024 – May 2026  
+**Period:** Jun 2024 – Jul 2026  
 **Contributors:** SantosJGND (299 commits), dsobral/Daniel Sobral (9 commits)
 
 ---
@@ -38,3 +38,15 @@
 - TELEVIR reference registration automated, `generate_default_trees` moved to bash
 - Medaka 2+ dependencies (abpoa), NCBI_EMAIL config, dotenv integration
 - Slurm storage/accounting fully operational — storage user, slurmdbd→mysql pipeline
+
+## Phase 5: ML Integration & API (Jun–Jul 2026)
+
+- ML API component introduced — FastAPI service for INSaFLU ML models
+  - Training scripts: `train_clustering.py`, `train_recall.py`
+  - Pre-trained model bundles: composition RF, direct XGBoost
+  - New endpoints: composition stop-traversal, recall cutoff-from-table
+  - Expanded validation schemas, model registry/cache refactoring
+  - Test payloads for recall endpoint
+- MariaDB version upgraded
+- `.gitignore` cleanup (pycache, build artifacts)
+- ml_app health check fixed — replaced `curl` (unavailable in slim image) with Python `urllib`
