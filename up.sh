@@ -12,13 +12,20 @@ fi
 if [ ! -d "${BASE_PATH_DATA}/insaflu/data/all_data" ]; then 
 	mkdir -p ${BASE_PATH_DATA}/insaflu/data/all_data
 fi
-if [ ! -d "${BASE_PATH_DATA}/insaflu/data/predefined_dbs" ]; then 
+if [ ! -d "${BASE_PATH_DATA}/insaflu/data/predefined_dbs" ]; then
 	mkdir -p ${BASE_PATH_DATA}/insaflu/data/predefined_dbs
 fi
-if [ ! -d "${BASE_PATH_DATA}/insaflu/env" ]; then 
+if [ ! -d "${BASE_PATH_DATA}/insaflu/data/static" ]; then
+	mkdir -p ${BASE_PATH_DATA}/insaflu/data/static
+fi
+if [ ! -d "${BASE_PATH_DATA}/insaflu/env" ]; then
 	mkdir -p ${BASE_PATH_DATA}/insaflu/env
 fi
-if [ ! -d "${BASE_PATH_DATA}/insaflu/log/httpd" ]; then 
+if [ ! -d "${BASE_PATH_DATA}/insaflu/log/insaFlu" ]; then
+	mkdir -p ${BASE_PATH_DATA}/insaflu/log/insaFlu
+	chmod 777 ${BASE_PATH_DATA}/insaflu/log/insaFlu
+fi
+if [ ! -d "${BASE_PATH_DATA}/insaflu/log/httpd" ]; then
 	mkdir -p ${BASE_PATH_DATA}/insaflu/log/httpd
 fi
 cp components/insaflu-ubuntu/configs/insaflu.env ${BASE_PATH_DATA}/insaflu/env/
