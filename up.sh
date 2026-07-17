@@ -30,12 +30,15 @@ fi
 export IMAGE=insaflu-ubuntu
 
 echo "Starting INSaFLU services ..."
-docker compose up ${IMAGE}
+docker compose up -d ${IMAGE}
 
 echo ""
 echo "==================================================================="
 echo "INSaFLU is now running, along with its Slurm cluster (c1/c2 compute"
 echo "nodes are started automatically as dependencies of ${IMAGE})."
+echo ""
+echo "To follow startup progress:"
+echo "  docker logs -f insaflu-ubuntu"
 echo ""
 echo "To check cluster/container status:"
 echo "  ./cluster-status.sh"

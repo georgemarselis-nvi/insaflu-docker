@@ -33,11 +33,11 @@ copy_slurm_config() {
 
     chown -R slurm:slurm /etc/slurm
     echo `cat /etc/slurm/slurm.conf`
-    echo `cat /etc/slurm/slurmdbd.conf`
     echo `cat /etc/slurm/cgroup.conf`
     # Strict permissions required by Slurm
+    # (slurmdbd.conf is intentionally not mounted here - only the
+    # slurmdbd container gets it, see components/slurm_master/entrypoint.sh)
     chmod 640 /etc/slurm/slurm.conf || true
-    chmod 640 /etc/slurm/slurmdbd.conf || true
     chmod 640 /etc/slurm/cgroup.conf || true
   fi
 
