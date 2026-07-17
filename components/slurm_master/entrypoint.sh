@@ -47,7 +47,13 @@ then
     move_munge_key
     echo `ls /run/secrets/slurm`
     copy_slurm_config
-    
+
+    if [ -f /run/secrets/slurmdbd.conf ]; then
+        cp -f /run/secrets/slurmdbd.conf /etc/slurm/slurmdbd.conf
+        chown slurm:slurm /etc/slurm/slurmdbd.conf
+        chmod 600 /etc/slurm/slurmdbd.conf
+    fi
+
     echo "---> Starting the MUNGE Authentication service (munged) ..."
     #service munge start
     gosu munge munged --pid-file=/var/run/munge/munged.pid

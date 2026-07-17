@@ -122,7 +122,7 @@ services:
     hostname: slurmdbd
     volumes:
       - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
-      - ./components/slurm_master/configs/slurmdbd/slurmdbd.conf:/run/secrets/slurm/slurmdbd.conf:ro
+      - ./components/slurm_master/configs/slurmdbd/slurmdbd.conf:/run/secrets/slurmdbd.conf:ro
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
