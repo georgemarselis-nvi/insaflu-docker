@@ -34,8 +34,9 @@ copy_slurm_config() {
         chown -R slurm:slurm /etc/slurm
         
         # Strict permissions required by Slurm
+        # (slurmdbd.conf is copied/chmod'd separately below, only for the
+        # slurmdbd container - it's never present here at this point)
         chmod 600 /etc/slurm/slurm.conf || true
-        chmod 600 /etc/slurm/slurmdbd.conf || true
         chmod 600 /etc/slurm/cgroup.conf || true
     fi
 }
