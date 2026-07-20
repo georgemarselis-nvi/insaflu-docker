@@ -120,8 +120,8 @@ To check on the cluster (containers, node status, running/pending jobs):
 $ ./cluster-status.sh
 ```
 
-The cluster can be scaled — adding more compute nodes, or resizing `c1`/`c2`'s declared CPU/memory — see
-the "Scaling the Slurm cluster" section of `CLAUDE.md` for the procedure.
+See [`CLUSTER.md`](CLUSTER.md) for more on how it works, how to inspect job history, and how to add more
+compute nodes or resize `c1`/`c2`'s declared CPU/memory.
 
 ## Change variables in your local environment
 
