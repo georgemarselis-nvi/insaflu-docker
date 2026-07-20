@@ -56,12 +56,12 @@ those exports as an NFS client.
 Machine B's own Slurm daemon logs aren't visible from Machine A without extra tooling.
 
 Several of these (`slurm_jobdir`, `insaflu-software`, `var_log_insaflu`, `tmp_insaflu`) currently use
-Docker's plain `local` volume driver, which doesn't pin them to a known host path the way the `local-persist`
-volumes are pinned to `${BASE_PATH_DATA}` — worth converting them to `local-persist` on Machine A too,
-purely so there's a known path to export over NFS.
+Docker's plain `local` volume driver, which doesn't pin them to a known host path the way the other volumes
+are (those are plain `${BASE_PATH_DATA}/...` bind mounts) — worth converting them to explicit bind mounts
+on Machine A too, purely so there's a known path to export over NFS.
 
 Example: export the relevant `${BASE_PATH_DATA}/...` directories from Machine A via `/etc/exports`, then on
-Machine B's compose file, define the same volume names using NFS instead of `local-persist`:
+Machine B's compose file, define the same volume names using NFS instead of a local bind mount:
 
 ```yaml
 volumes:

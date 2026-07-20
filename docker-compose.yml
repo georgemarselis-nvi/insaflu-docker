@@ -9,35 +9,6 @@ volumes:
   mlflow_data:
   mlflow_artifacts:
 
-  pg_data:
-    driver: local-persist
-    driver_opts:
-      mountpoint: ${BASE_PATH_DATA}/postgres/postgres_data
-  insaflu-ubuntu-data:
-    driver: local-persist
-    driver_opts:
-      mountpoint: ${BASE_PATH_DATA}/insaflu/data/all_data
-  insaflu-ubuntu-static:
-    driver: local-persist
-    driver_opts:
-      mountpoint: ${BASE_PATH_DATA}/insaflu/data/static
-  insaflu-ubuntu-env:
-    driver: local-persist
-    driver_opts:
-      mountpoint: ${BASE_PATH_DATA}/insaflu/env
-  insaflu-ubuntu-log-insaflu:
-    driver: local-persist
-    driver_opts:
-      mountpoint: ${BASE_PATH_DATA}/insaflu/log/insaFlu
-  insaflu-ubuntu-log-httpd:
-    driver: local-persist
-    driver_opts:
-      mountpoint: ${BASE_PATH_DATA}/insaflu/log/httpd
-  televir:
-    driver: local-persist
-    driver_opts:
-      mountpoint: ${BASE_PATH_DATA}/televir/
-
 ### this is necessary to set an ip to SGE in insaflu
 networks:
   insaflu_ubuntu_net:
@@ -52,14 +23,14 @@ networks:
 
 services:
   # DB for Insaflu
-  # test database - psql -U flu_user -W -h localhost -d insaflu_db 
+  # test database - psql -U flu_user -W -h localhost -d insaflu_db
   db_insaflu:
     build: components/postgres_postgis/.
     restart: always
     container_name: postgres
     hostname: db_insaflu
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - ${BASE_PATH_DATA}/postgres/postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: "flu_user"
       POSTGRES_PASSWORD: "flu_user_pass"
@@ -110,7 +81,7 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
-  
+
   slurmdbd:
     image: slurm-runtime:${SLURM_TAG:-25.05.3}
     build:
@@ -186,16 +157,16 @@ services:
     privileged: true
     volumes:
       - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
-      - slurm_jobdir:/data 
+      - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
-      - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
-      - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
+      - ${BASE_PATH_DATA}/insaflu/data/all_data:/insaflu_web/INSaFLU/media
+      - ${BASE_PATH_DATA}/insaflu/data/static:/insaflu_web/INSaFLU/static_all
       - insaflu-software:/software
-      - televir:/opt/televir
+      - ${BASE_PATH_DATA}/televir:/opt/televir
       - var_log_insaflu:/var/log/insaFlu
       - tmp_insaflu:/tmp/insaFlu
-      - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
+      - ${BASE_PATH_DATA}/insaflu/env:/insaflu_web/INSaFLU/env
     expose:
       - "6818"
     depends_on:
@@ -229,16 +200,16 @@ services:
     privileged: true
     volumes:
       - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
-      - slurm_jobdir:/data 
+      - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
-      - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
-      - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
+      - ${BASE_PATH_DATA}/insaflu/data/all_data:/insaflu_web/INSaFLU/media
+      - ${BASE_PATH_DATA}/insaflu/data/static:/insaflu_web/INSaFLU/static_all
       - insaflu-software:/software
-      - televir:/opt/televir
+      - ${BASE_PATH_DATA}/televir:/opt/televir
       - var_log_insaflu:/var/log/insaFlu
       - tmp_insaflu:/tmp/insaFlu
-      - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
+      - ${BASE_PATH_DATA}/insaflu/env:/insaflu_web/INSaFLU/env
     expose:
       - "6818"
     depends_on:
@@ -272,12 +243,11 @@ services:
     hostname: insaflu
     restart: "on-failure"
     volumes:
-      - televir:/opt/televir
-      - insaflu-ubuntu-data:/insaflu_web/INSaFLU/media
-      - insaflu-ubuntu-static:/insaflu_web/INSaFLU/static_all
-      - insaflu-ubuntu-env:/insaflu_web/INSaFLU/env
-      - insaflu-ubuntu-log-insaflu:/var/log/insaFlu
-      - insaflu-ubuntu-log-httpd:/var/log/httpd
+      - ${BASE_PATH_DATA}/televir:/opt/televir
+      - ${BASE_PATH_DATA}/insaflu/data/all_data:/insaflu_web/INSaFLU/media
+      - ${BASE_PATH_DATA}/insaflu/data/static:/insaflu_web/INSaFLU/static_all
+      - ${BASE_PATH_DATA}/insaflu/env:/insaflu_web/INSaFLU/env
+      - ${BASE_PATH_DATA}/insaflu/log/httpd:/var/log/httpd
       - insaflu-software:/software
       - slurm_jobdir:/data
       - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro

@@ -162,8 +162,9 @@ classifiers, assemblers) is configured over there, not in this repo.
 
 ### Environment variables (`.env`, copy from `.env_temp`)
 
-Key variables: `BASE_PATH_DATA` (host path where all persisted volumes live, via the `local-persist` Docker
-volume plugin), `APP_PORT` (INSaFLU web UI port), `TIMEZONE`, `USERNAME_IMAGE`/`IMAGE`/`IMAGE_TAG` (image
+Key variables: `BASE_PATH_DATA` (host path where all persisted data lives, bind-mounted directly into each
+service — no volume plugin involved; `docker-compose.yml`'s stateful volumes are plain
+`${BASE_PATH_DATA}/...` bind mounts), `APP_PORT` (INSaFLU web UI port), `TIMEZONE`, `USERNAME_IMAGE`/`IMAGE`/`IMAGE_TAG` (image
 naming), `SLURM_TAG` (Slurm version built from source — must match across `slurm_master`/`slurm_nodes`,
 and must correspond to a real tag/branch in `SchedMD/slurm` on GitHub). `TELEVIR_IMAGE`/
 `TELEVIR_BASE_PATH_DATA`/`TELEVIR_PORT` are vestigial (see the TELEVIR note above) — safe to ignore.

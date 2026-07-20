@@ -25,20 +25,6 @@ Docker:
 - Install [docker](https://docs.docker.com/engine/install/) in your linux server;
   (recent versions of docker already include docker compose)
 
-- Install the docker extension [local-persist](https://github.com/MatchbookLab/local-persist);
-
-```bash
-  $ curl -fsSL https://raw.githubusercontent.com/MatchbookLab/local-persist/master/scripts/install.sh > install.sh
-
-  $ chmod a+x install.sh
-
-  $ sudo ./install.sh
-```
-
-:warning: If you're uncomfortable running a script you downloaded off the internet with sudo, you can extract any of the steps out of the install.sh script and run them manually.
-
-:warning: local-persist does not seem to be supported in windows environments eg. WSL2. In this case you may need to adjust the Dockerfile(s) to use bind volumes instead.
-
 INSaFLU:
 
 ```bash

@@ -33,7 +33,7 @@ promise of HA — pick one explicitly:
 
 ### Storage
 
-Today's volumes are all node-local: `local-persist` (pinned host paths under `${BASE_PATH_DATA}`) and
+Today's volumes are all node-local: plain bind mounts (pinned host paths under `${BASE_PATH_DATA}`) and
 Docker's plain `local` driver (opaque host storage). Both break silently once a container can be
 rescheduled to a different node — the same "which container's image populates the empty named volume
 first" fragility already known from this session's `insaflu-software` volume bug, now happening across an
@@ -146,7 +146,7 @@ What's concretely needed:
 - `StatefulSet` (+ a **headless** `Service`, `clusterIP: None`) for `db_insaflu`, `mysql`, `slurmctld`,
   `c1`/`c2` — stable per-pod identity and a stable storage claim per replica.
 - `PersistentVolumeClaim`s backed by a real `StorageClass` (Longhorn/Ceph-Rook self-hosted, or a cloud
-  provider's block storage) — replaces `local-persist`/`local` volumes.
+  provider's block storage) — replaces today's bind mounts/`local` volumes.
 - `ConfigMap` for `slurm.conf`/`cgroup.conf` (keeps the "one canonical copy" property this session already
   established, just as a Kubernetes object instead of a bind-mounted directory).
 - `Secret` for `munge.key`/`insaflu.env`.
@@ -220,7 +220,7 @@ requirement.
 Phased — this is not a small change:
 
 1. **Prep** (no orchestrator yet): stand up the container registry; finish converting the remaining plain-
-   `local`-driver volumes to `local-persist` (continuing a pattern already partly in place); decide and
+   `local`-driver volumes to explicit bind mounts (continuing a pattern already partly in place); decide and
    document which physical node(s) will hold which role (db, Slurm master, general app tier).
 2. **Redesign `officer`** on the current single-host setup first, independent of the cluster cutover, so
    it's validated before adding cross-node complexity on top.
