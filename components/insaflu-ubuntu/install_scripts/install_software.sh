@@ -93,7 +93,7 @@ fi
 ### freebayes
 echo "Install freebayes"
 apt-get update
-apt-get install bc samtools parallel meson ninja-build libvcflib-tools vcftools -y
+apt-get install bc samtools parallel meson ninja-build libvcflib-tools vcftools aragorn prodigal -y
 cd /software
 if [ -d /software/freebayes ]; then
     rm -rf /software/freebayes
@@ -138,6 +138,10 @@ if [ $? -ne 0 ]; then
     echo "Error installing prokka"
     exit 1
 fi
+
+### expose tbl2asn on PATH like the slurm compute nodes do (see slurm_nodes/software/make_links.sh)
+ln -s /software/miniconda2/envs/tbl2asn/bin/tbl2asn /usr/local/bin/tbl2asn
+ln -s /software/miniconda2/envs/tbl2asn/bin/real-tbl2asn /usr/local/bin/real-tbl2asn
 
 ### final scripts
 mv /tmp_install/software/scripts /software/
