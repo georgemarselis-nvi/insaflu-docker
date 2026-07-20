@@ -4,7 +4,8 @@ By default everything in this repo — the web app, database, and the whole Slur
 physical machine. This document covers what's needed to run some Slurm compute nodes (existing `c1`/`c2`,
 or new `c3`/`c4`) on **separate hardware** instead, for more compute capacity. It does not cover
 distributing the rest of the stack (web app/database) — that's a much bigger undertaking (effectively
-Docker Swarm or Kubernetes, plus database HA) and isn't what this covers.
+Docker Swarm or Kubernetes, plus database HA); see [`SWARM_VS_KUBERNETES.md`](SWARM_VS_KUBERNETES.md) for
+that scope instead.
 
 **This is a design reference, not a turnkey script.** The IP addresses below (`10.100.0.1`/`10.100.0.2`)
 are placeholders — replace them with your actual VPN addresses. Nothing here has been run end-to-end
