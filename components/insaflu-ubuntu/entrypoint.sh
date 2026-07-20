@@ -65,11 +65,11 @@ if [ "$1" = "init_all" ]; then
     cd /insaflu_web/INSaFLU; /usr/bin/python3 manage.py makemigrations; /usr/bin/python3 manage.py migrate;
     
     ### set owners
-    echo "---> Set owners APP_USER ..."
-    chown -R APP_USER:slurm /insaflu_web/INSaFLU/media
-    chown -R APP_USER:slurm /var/log/insaFlu
+    echo "---> Set owners $APP_USER ..."
+    chown -R $APP_USER:slurm /insaflu_web/INSaFLU/media
+    chown -R $APP_USER:slurm /var/log/insaFlu
     ### This s for televir
-    chown -R APP_USER:slurm /insaflu_web/INSaFLU/static_all
+    chown -R $APP_USER:slurm /insaflu_web/INSaFLU/static_all
     
     ### some files/paths are made by "root" account and need to be accessed by "flu_user"
     ### It's done by tmpfiles.d
@@ -84,8 +84,8 @@ if [ "$1" = "init_all" ]; then
     
     ### set default files and settings, deploy using slurm
     echo "---> Set default files and settings  ..."
-    echo APP_USER
-    mkdir -p /data/tmp && cd /data/tmp/;  chown -R APP_USER:slurm /data/;
+    echo $APP_USER
+    mkdir -p /data/tmp && cd /data/tmp/;  chown -R $APP_USER:slurm /data/;
     cp /insaflu_web/commands/load_defaults.sh .
     sbatch load_defaults.sh
     cd /insaflu_web/INSaFLU;
