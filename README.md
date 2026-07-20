@@ -90,7 +90,7 @@ Commands:
     * update-password		## update password for a specific user;
     * remove-fastq-files	        ## remove fastq files to increase sample in hard drive. You must have a copy of these files;
     * unlock-upload-files	        ## unlock files samples thar are zombie when upload multiple samples;
-    * restart-apache		## restart web server, for example, after change something in insaflu/env/insaflu.env file;
+    * restart-apache		## restart web server, for example, after directly editing /insaflu_web/INSaFLU/.env for a quick test (see "Change variables in your local environment" below - it does NOT pick up changes made only to insaflu/env/insaflu.env, that needs a container recreate);
     * upload-reference-dbs	        ## place new references in db/references and you can update them;
     * update-nextstrain_builds	## update the nextstrain builds to the latest information;
     * update-insaflu		## update insaflu software to a new version;
@@ -107,10 +107,54 @@ $ docker exec -it insaflu-server update-password <some login>
 $ docker exec -it insaflu-server update-insaflu
 ```
 
+## The Slurm cluster
+
+Heavy bioinformatics jobs (loading reference files/Pangolin lineages, and processing samples) run on a
+small [Slurm](https://slurm.schedmd.com/) cluster alongside the web app, rather than inside the web
+container itself: two compute nodes (`c1`/`c2`) plus `slurmctld`/`slurmdbd` for scheduling and job
+accounting. This starts automatically with `./up.sh` — there's nothing extra to run.
+
+To check on the cluster (containers, node status, running/pending jobs):
+
+```bash
+$ ./cluster-status.sh
+```
+
+The cluster can be scaled — adding more compute nodes, or resizing `c1`/`c2`'s declared CPU/memory — see
+the "Scaling the Slurm cluster" section of `CLAUDE.md` for the procedure.
+
 ## Change variables in your local environment
 
-You can customize your environment. Some of the relevant variables include the maximum reads size for upload (e.g., MAX_FASTQ_FILE_UPLOAD = 104857600), indicate if the files should be (or not) downsized after upload (i.e., DOWN_SIZE_FASTQ_FILES = True/False), indicate the maximum files size after downsizing (e.g. MAX_FASTQ_FILE_WITH_DOWNSIZE = 429916160), maximum length of external consensus sequences for nextstrain analysis (eg. MAX_LENGTH_SEQUENCE_TOTAL_FROM_CONSENSUS_FASTA = 104857600), etc.
-To change these variables you need to edit the config file .env, as described below:
+There are two separate layers of configuration:
+
+- The top-level `.env` file (copied from `.env_temp`) — Docker/infrastructure settings: `BASE_PATH_DATA`,
+  `APP_PORT`, `TIMEZONE`, `SLURM_TAG`, `IMAGE_TAG`, etc. Edited once, before the first `./build.sh`/`./up.sh`.
+- `insaflu.env` — the INSaFLU **application** configuration: `ALLOWED_HOSTS`, `SECRET_KEY`, database
+  connection settings (`DB_*`), email settings, and upload size limits (e.g., `MAX_FASTQ_FILE_UPLOAD = 104857600`,
+  `DOWN_SIZE_FASTQ_FILES = True/False`, `MAX_FASTQ_FILE_WITH_DOWNSIZE = 429916160`,
+  `MAX_LENGTH_SEQUENCE_TOTAL_FROM_CONSENSUS_FASTA = 104857600`). This section is about that second layer.
+
+**Before the first `./up.sh` run** (recommended, especially if you're deploying somewhere other than
+`localhost`): edit `components/insaflu-ubuntu/configs/insaflu.env` directly. This is the template that
+seeds `${BASE_PATH_DATA}/insaflu/env/insaflu.env` the first time `./up.sh` runs.
+
+:warning: **If your server will be reached over a network (not just `127.0.0.1`/`localhost`), you must
+update `ALLOWED_HOSTS`.** The checked-in template ships with a placeholder example IP (`192.168.40.28`) —
+replace it with your server's actual hostname/IP/domain, or requests will be rejected with a 400 error
+("DisallowedHost"). It's also worth reviewing `SECRET_KEY` (change it) and `DEBUG` (set to `False`) before
+any real deployment.
+
+**After `./up.sh` has already run once, for a change that should stick around:** edit the persisted copy
+directly, at `${BASE_PATH_DATA}/insaflu/env/insaflu.env` — `./up.sh` only seeds this file the first time it
+doesn't exist yet, so edits here survive future `./up.sh` runs and updates. To apply the change to an
+already-running deployment, recreate the web container so its entrypoint re-reads the persisted file:
+
+```bash
+$ docker compose up -d --force-recreate insaflu-ubuntu
+```
+
+**Quick, temporary testing only** (does *not* survive a container restart or recreation — the persisted
+copy above is what gets re-applied every time the container starts):
 
 ```bash
 ### get into INSaFLU docker
@@ -119,11 +163,9 @@ $ docker exec -it insaflu-ubuntu /bin/bash
 $ vi /insaflu_web/INSaFLU/.env
 ### get out INSaFLU  docker
 $ Ctrl^D
-### restart apache
+### restart apache to pick up the change in this session only
 $ docker exec -it insaflu-ubuntu restart-apache
 ```
-
-If you want to perpetuate the changes in future updates of INSaFLU webserver you also need to update "insaflu/env/insaflu.env".
 
 ## Change TELEVIR software install configuration
 

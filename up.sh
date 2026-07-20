@@ -28,7 +28,9 @@ fi
 if [ ! -d "${BASE_PATH_DATA}/insaflu/log/httpd" ]; then
 	mkdir -p ${BASE_PATH_DATA}/insaflu/log/httpd
 fi
-cp components/insaflu-ubuntu/configs/insaflu.env ${BASE_PATH_DATA}/insaflu/env/
+if [ ! -f "${BASE_PATH_DATA}/insaflu/env/insaflu.env" ]; then
+	cp components/insaflu-ubuntu/configs/insaflu.env ${BASE_PATH_DATA}/insaflu/env/
+fi
 if [ ! -d "${BASE_PATH_DATA}/televir" ]; then 
 	mkdir -p ${BASE_PATH_DATA}/televir
 fi
