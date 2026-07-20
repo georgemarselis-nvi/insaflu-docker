@@ -121,7 +121,8 @@ $ ./cluster-status.sh
 ```
 
 See [`CLUSTER.md`](CLUSTER.md) for more on how it works, how to inspect job history, and how to add more
-compute nodes or resize `c1`/`c2`'s declared CPU/memory.
+compute nodes or resize `c1`/`c2`'s declared CPU/memory. See [`MULTI_HOST.md`](MULTI_HOST.md) if you want
+to run compute nodes on a separate physical machine instead.
 
 ## Change variables in your local environment
 

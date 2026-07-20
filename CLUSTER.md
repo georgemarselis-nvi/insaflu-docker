@@ -10,6 +10,9 @@ web app, rather than running it inside the web container itself. The cluster con
 
 This starts automatically with `./up.sh` — there's nothing extra to run for normal use.
 
+Everything below assumes all containers run on one machine. See [`MULTI_HOST.md`](MULTI_HOST.md) if you
+want to run compute nodes on separate physical hardware instead.
+
 ## Checking on the cluster
 
 ```bash
