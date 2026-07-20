@@ -125,6 +125,42 @@ serving stack:
    `components/ml_api/models/` or the MLflow registry and serves `/predict_*` endpoints on port 8000. See
    `components/ml_api/README.md` for the training/deployment workflow and endpoint examples.
 
+### Scaling the Slurm cluster (adding nodes / resizing c1-c2)
+
+There is no dynamic node scaling in this repo — a prior attempt (parameterized node template,
+`scale-up.sh`/`scale-down.sh`, nodes that self-registered by `sed`-editing the shared `slurm.conf` and
+calling `scontrol reconfigure`) was built and then gradually abandoned back to static `c1`/`c2` over
+~1.5 months of commits, most likely because concurrent nodes editing one shared config file via `sed` is
+inherently racy. Extend the static pattern instead:
+
+**Adding nodes (e.g. `c3`, `c4`):**
+1. `components/slurm_master/configs/slurm/slurm.conf` — extend the hostlist: `NodeName=c[1-2] ...` →
+   `NodeName=c[1-4] ...`, and `PartitionName=normal ... Nodes=c[1-2] ...` → `Nodes=c[1-4]`. Use a separate
+   `NodeName=c[3-4] ...` line instead if the new nodes need different CPU/RealMemory than `c1`/`c2` (a
+   hostlist range shares one value across the whole set).
+2. `docker-compose.yml` — add explicit `c3:`/`c4:` blocks, copy-pasted from `c1`/`c2` changing only
+   `hostname:`/`container_name:`. Prefer plain copy-paste over YAML anchors here: this file has none
+   anywhere despite plenty of other repetitive blocks, the per-node repetition is small, and this exact
+   spot has a history of "clever" attempts going badly (see above). No Dockerfile/entrypoint change is
+   needed — `slurmd` takes its node identity from the container hostname.
+3. `docker compose up -d c3 c4`, then `docker exec slurmctld scontrol reconfigure` (reloads `slurm.conf`
+   without a disruptive full restart — running/pending jobs on `c1`/`c2` are untouched). New nodes can
+   land in a transient DOWN state; because `ReturnToService=0` is set, a DOWN node **stays down** until
+   resumed: `docker exec slurmctld scontrol update NodeName=c3,c4 State=RESUME`.
+4. Verify with `sinfo -N -l`, `scontrol show nodes`, or `./cluster-status.sh`.
+
+**Resizing `c1`/`c2`'s CPU/RealMemory:**
+1. Edit `NodeName=c[1-2] CPUs=<new> RealMemory=<new> State=UNKNOWN` in the same `slurm.conf` (split into
+   separate `NodeName=c1 ...` / `NodeName=c2 ...` lines if they need different values). Don't add Docker-level
+   resource limits (`deploy.resources`/`mem_limit`/`cpus`) as a side effect of this — none exist anywhere in
+   this compose file today, and adding OS-level enforcement to back up Slurm's currently-declarative
+   CPUs/RealMemory is a reasonable idea but a separate, precedent-setting change that deserves its own review.
+2. If jobs may be running, drain first: `docker exec slurmctld scontrol update NodeName=c1,c2 State=DRAIN Reason="resizing"`.
+3. `docker exec slurmctld scontrol reconfigure`, then `docker compose restart c1 c2` so each node's own
+   self-reported capacity matches (this interrupts anything currently *running* on them; pending jobs
+   simply re-queue). Resume if needed: `scontrol update NodeName=c1,c2 State=RESUME`.
+4. Verify with `sinfo -N -l` / `scontrol show nodes` (updated `CPUS`/`MEMORY` columns) and `squeue`.
+
 ### Image layering
 
 - `components/slurm_master/Dockerfile` builds a two-stage image: stage 1 compiles Slurm from source

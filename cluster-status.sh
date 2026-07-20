@@ -30,10 +30,10 @@ docker exec -it insaflu-ubuntu squeue 2>/dev/null || echo "No jobs currently run
 # Show cluster statistics
 echo ""
 echo "=== Cluster Statistics ==="
-TOTAL_CONTAINERS=$(docker ps --filter "name=slurm-node" --format "{{.Names}}" | wc -l)
+TOTAL_CONTAINERS=$(docker ps --filter "name=^c[0-9]+$" --format "{{.Names}}" | wc -l)
 echo "Total compute node containers: $TOTAL_CONTAINERS"
 
 if [ $TOTAL_CONTAINERS -gt 0 ]; then
     echo "Compute node names:"
-    docker ps --filter "name=slurm-node" --format "  - {{.Names}}"
+    docker ps --filter "name=^c[0-9]+$" --format "  - {{.Names}}"
 fi
