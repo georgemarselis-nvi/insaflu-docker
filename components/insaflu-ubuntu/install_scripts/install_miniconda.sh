@@ -89,6 +89,24 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Nextstrain CLI (standalone) - provides `nextstrain setup`/runtime management on top of the nextstrain conda env
+echo "Install Nextstrain CLI (standalone) for $APP_USER"
+cat > /tmp/install_nextstrain_cli.sh <<'EOSCRIPT'
+set -e
+curl -fsSL --proto '=https' https://nextstrain.org/cli/installer/linux | bash
+printf '\n%s\n' 'eval "$("$HOME/.nextstrain/cli-standalone/nextstrain" init-shell bash)"' >> "$HOME/.bashrc"
+eval "$("$HOME/.nextstrain/cli-standalone/nextstrain" init-shell bash)"
+nextstrain setup --set-default conda
+EOSCRIPT
+chmod +x /tmp/install_nextstrain_cli.sh
+chown $APP_USER:slurm /tmp/install_nextstrain_cli.sh
+su - $APP_USER -c /tmp/install_nextstrain_cli.sh
+if [ $? -ne 0 ]; then
+    echo "Error installing Nextstrain CLI (standalone)"
+    exit 1
+fi
+rm -f /tmp/install_nextstrain_cli.sh
+
 # Pangolin
 mv /tmp_install/software/update_pangolin.sh /software && chmod a+x /software/update_pangolin.sh && mv /tmp_install/software/pangolin /software/ && conda create --name=pangolin -c conda-forge python=3.8 mamba --yes && conda activate pangolin && mamba install -c conda-forge -c bioconda pangolin=4.2 --yes && chmod u+x /software/pangolin/pangolin.sh  && conda deactivate
 if [ $? -ne 0 ]; then
