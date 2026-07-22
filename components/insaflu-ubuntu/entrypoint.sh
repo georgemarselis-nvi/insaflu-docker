@@ -71,13 +71,10 @@ if [ "$1" = "init_all" ]; then
     ### This s for televir
     chown -R $APP_USER:slurm /insaflu_web/INSaFLU/static_all
     
-    ### some files/paths are made by "root" account and need to be accessed by "flu_user"
-    ### It's done by tmpfiles.d
-    rm -rf /tmp/insaFlu/*
-    if [ -d "/tmp/insaFlu" ]; then
-        chmod -R 0777 /tmp/insaFlu
-    fi
-    
+    ### some files/paths in /data/tmp are made by "root" account and need to be accessed by "flu_user"
+    mkdir -p /data/tmp
+    chmod -R 0777 /data/tmp
+
     chmod -R 0777 /insaflu_web/INSaFLU/media
     chmod -R 0777 /insaflu_web/INSaFLU/static_all
     chmod -R 0777 /var/log/insaFlu

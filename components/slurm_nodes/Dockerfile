@@ -36,8 +36,6 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 RUN chown slurm:slurm /usr/local/bin/entrypoint.sh
 
-RUN mkdir -p /tmp/insaFlu && chown ${APP_USER}:slurm /tmp/insaFlu
-
 RUN apt-get update \
     && apt-get install -y sudo netcat-openbsd
 

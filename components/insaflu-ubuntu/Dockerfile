@@ -23,7 +23,6 @@ LABEL vendor=INSA\
 
 RUN mkdir -p /tmp_install
 RUN mkdir -p /software
-RUN mkdir -p /tmp/insaFlu
 
 ADD configs/ /tmp_install/configs/
 ADD commands/ /tmp_install/commands/

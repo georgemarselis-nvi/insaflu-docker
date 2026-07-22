@@ -31,8 +31,11 @@ fi
 if [ ! -f "${BASE_PATH_DATA}/insaflu/env/insaflu.env" ]; then
 	cp components/insaflu-ubuntu/configs/insaflu.env ${BASE_PATH_DATA}/insaflu/env/
 fi
-if [ ! -d "${BASE_PATH_DATA}/televir" ]; then 
+if [ ! -d "${BASE_PATH_DATA}/televir" ]; then
 	mkdir -p ${BASE_PATH_DATA}/televir
+fi
+if [ ! -d "${BASE_PATH_DATA}/workdir" ]; then
+	mkdir -p ${BASE_PATH_DATA}/workdir
 fi
 
 # image name

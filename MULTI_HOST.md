@@ -42,7 +42,8 @@ Machine A becomes the NFS server for whatever compute nodes on Machine B need to
 those exports as an NFS client.
 
 **Must be shared** (this is what `c1`/`c2` mount today):
-- `slurm_jobdir` → `/data` (the job working directory — this is how `sbatch` hands off work; without this
+- `workdir` (`${BASE_PATH_DATA}/workdir`) → `/data` (the job working directory — this is how `sbatch` hands
+  off work, and also where job code writes scratch/output data (e.g. TELEVIR registration); without this
   shared, jobs can't actually run)
 - `insaflu-software` → `/software` (the bioinformatics tools jobs execute)
 - `insaflu-ubuntu-data` → `/insaflu_web/INSaFLU/media`
@@ -50,29 +51,28 @@ those exports as an NFS client.
 - `insaflu-ubuntu-env` → `/insaflu_web/INSaFLU/env`
 - `televir` → `/opt/televir`
 - `var_log_insaflu` → `/var/log/insaFlu`
-- `tmp_insaflu` → `/tmp/insaFlu`
 
 **Can stay local to Machine B**: `var_log_slurm` — sharing it loses nothing, but skipping it just means
 Machine B's own Slurm daemon logs aren't visible from Machine A without extra tooling.
 
-Several of these (`slurm_jobdir`, `insaflu-software`, `var_log_insaflu`, `tmp_insaflu`) currently use
-Docker's plain `local` volume driver, which doesn't pin them to a known host path the way the other volumes
-are (those are plain `${BASE_PATH_DATA}/...` bind mounts) — worth converting them to explicit bind mounts
-on Machine A too, purely so there's a known path to export over NFS.
+Two of these (`insaflu-software`, `var_log_insaflu`) currently use Docker's plain `local` volume driver,
+which doesn't pin them to a known host path the way the other volumes are (those are plain
+`${BASE_PATH_DATA}/...` bind mounts) — worth converting them to explicit bind mounts on Machine A too,
+purely so there's a known path to export over NFS.
 
 Example: export the relevant `${BASE_PATH_DATA}/...` directories from Machine A via `/etc/exports`, then on
 Machine B's compose file, define the same volume names using NFS instead of a local bind mount:
 
 ```yaml
 volumes:
-  slurm_jobdir:
+  workdir:
     driver: local
     driver_opts:
       type: nfs
       o: addr=10.100.0.1,rw,nfsvers=4       # Machine A's WireGuard IP
-      device: ":/exported/path/to/slurm_jobdir"
+      device: ":/exported/path/to/workdir"
   # ...repeat for insaflu-software, insaflu-ubuntu-data, insaflu-ubuntu-static,
-  #    insaflu-ubuntu-env, televir, var_log_insaflu, tmp_insaflu
+  #    insaflu-ubuntu-env, televir, var_log_insaflu
 ```
 
 `c3`/`c4` on Machine B then mount these exactly like `c1`/`c2` do today — no Dockerfile or entrypoint

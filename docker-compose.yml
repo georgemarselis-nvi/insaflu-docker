@@ -1,11 +1,9 @@
 ### places where the most important data is
 volumes:
-  slurm_jobdir:
   var_log_insaflu:
   var_log_slurm:
   var_lib_mysql:
   insaflu-software:
-  tmp_insaflu:
   mlflow_data:
   mlflow_artifacts:
 
@@ -95,7 +93,7 @@ services:
       - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
       - ./components/slurm_master/configs/slurmdbd/slurmdbd.conf:/run/secrets/slurmdbd.conf:ro
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
-      - slurm_jobdir:/data
+      - ${BASE_PATH_DATA}/workdir:/data
       - var_log_slurm:/var/log/slurm
     expose:
       - "6819"
@@ -125,7 +123,7 @@ services:
     volumes:
       - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
-      - slurm_jobdir:/data:rw
+      - ${BASE_PATH_DATA}/workdir:/data
       - var_log_slurm:/var/log/slurm:rw
     expose:
       - "6817"
@@ -157,7 +155,7 @@ services:
     privileged: true
     volumes:
       - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
-      - slurm_jobdir:/data
+      - ${BASE_PATH_DATA}/workdir:/data
       - var_log_slurm:/var/log/slurm
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
       - ${BASE_PATH_DATA}/insaflu/data/all_data:/insaflu_web/INSaFLU/media
@@ -165,7 +163,6 @@ services:
       - insaflu-software:/software
       - ${BASE_PATH_DATA}/televir:/opt/televir
       - var_log_insaflu:/var/log/insaFlu
-      - tmp_insaflu:/tmp/insaFlu
       - ${BASE_PATH_DATA}/insaflu/env:/insaflu_web/INSaFLU/env
     expose:
       - "6818"
@@ -200,7 +197,7 @@ services:
     privileged: true
     volumes:
       - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
-      - slurm_jobdir:/data
+      - ${BASE_PATH_DATA}/workdir:/data
       - var_log_slurm:/var/log/slurm
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
       - ${BASE_PATH_DATA}/insaflu/data/all_data:/insaflu_web/INSaFLU/media
@@ -208,7 +205,6 @@ services:
       - insaflu-software:/software
       - ${BASE_PATH_DATA}/televir:/opt/televir
       - var_log_insaflu:/var/log/insaFlu
-      - tmp_insaflu:/tmp/insaFlu
       - ${BASE_PATH_DATA}/insaflu/env:/insaflu_web/INSaFLU/env
     expose:
       - "6818"
@@ -249,11 +245,10 @@ services:
       - ${BASE_PATH_DATA}/insaflu/env:/insaflu_web/INSaFLU/env
       - ${BASE_PATH_DATA}/insaflu/log/httpd:/var/log/httpd
       - insaflu-software:/software
-      - slurm_jobdir:/data
+      - ${BASE_PATH_DATA}/workdir:/data
       - ./components/slurm_master/configs/slurm:/run/secrets/slurm:ro
       - ./components/slurm_master/configs/munge/munge.key:/run/secrets/munge.key:ro
       - var_log_insaflu:/var/log/insaFlu
-      - tmp_insaflu:/tmp/insaFlu
     labels:
       deck-chores.update-pangolin.command: sh -c "/software/update_pangolin.sh"
       # weekly, daily, hourly, every minute and every second.
