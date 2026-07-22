@@ -21,6 +21,17 @@ LABEL vendor=INSA\
       pt.insa.insaflu.release-date="2023-06-13"
 
 
+### Locale - needed by Perl-based tools (Prokka, Snippy). Set as real ENV, not just a
+### shell-profile export, so it applies to every process (root, flu_user, sbatch jobs,
+### Apache/mod_wsgi subprocesses) rather than only flu_user's own interactive shells.
+RUN apt-get update && apt-get install -y locales \
+    && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
 RUN mkdir -p /tmp_install
 RUN mkdir -p /software
 

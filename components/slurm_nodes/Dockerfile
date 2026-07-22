@@ -44,11 +44,14 @@ RUN apt-get update && apt-get install -y bash-completion wget
 RUN apt-get update \
     && apt-get install -y locales
 
-
-RUN echo "export LC_CTYPE=en_US.UTF-8" >> /home/${APP_USER}/.bashrc
-RUN echo "export LC_ALL=en_US.UTF-8" >> /home/${APP_USER}/.bashrc
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
-RUN locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8
+### Set as real ENV, not just a shell-profile export, so it applies to every process
+### (root, flu_user, slurmd job steps) rather than only flu_user's own interactive shells.
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 RUN cat /tmp_install/configs/system_paths.sh >> /home/${APP_USER}/.bashrc
 RUN cat /tmp_install/configs/system_paths.sh >> /root/.bashrc
