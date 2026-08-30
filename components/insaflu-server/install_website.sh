@@ -80,6 +80,7 @@ function install_insaflu_base {
     cd /insaflu_web
     pip3 install "Cython<3.0"
     pip3 install pyyaml==6.0.1
+    pip3 install pysam==0.19.1
     git clone --branch develop https://github.com/INSaFLU/INSaFLU.git
     cd INSaFLU
     pip3 install -r requirements.txt
