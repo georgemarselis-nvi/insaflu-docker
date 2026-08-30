@@ -52,6 +52,7 @@ packages=(
     bzip2
     automake
     libtool
+    libjpeg-turbo-devel
     which
     https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.7.1/ncbi-blast-2.7.1+-1.x86_64.rpm
 )
