@@ -98,6 +98,8 @@ install_nextstrain_dengue() {
     conda create --name=nextstrain_dengue -c conda-forge mamba python=3.10 --yes
     conda activate nextstrain_dengue
     mamba install -c conda-forge -c bioconda mafft iqtree seqkit --yes
+    export CVXOPT_LAPACK_LIB_DIR=/usr/lib64
+    export CVXOPT_BLAS_LIB_DIR=/usr/lib64
     pip install nextstrain-cli==8.5.4
     pip install numpy==1.26.4
     pip install pandas==1.5.3
