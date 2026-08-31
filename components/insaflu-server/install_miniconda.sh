@@ -93,11 +93,14 @@ echo "Install Nextstrain Dengue"
 # which still publish manylinux_2_17 wheels, so nothing is built from source.
 # See:      https://github.com/INSaFLU/docker/issues/48
 # See also: https://github.com/INSaFLU/docker/issues/50
+# See also: https://github.com/INSaFLU/docker/issues/52
 install_nextstrain_dengue() {
     conda create --name=nextstrain_dengue -c conda-forge mamba python=3.10 --yes
     conda activate nextstrain_dengue
     mamba install -c conda-forge -c bioconda mafft iqtree seqkit --yes
     pip install nextstrain-cli==8.5.4
+    pip install numpy==1.26.4
+    pip install pandas==1.5.3
     pip install pillow==12.2.0
     pip install matplotlib==3.9.4
     pip install phylo-treetime==0.11.5
