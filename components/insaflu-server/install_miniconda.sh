@@ -121,7 +121,7 @@ install_nextstrain_dengue() {
 install_nextstrain_dengue
 
 # Nextstrain builds
-cd /software/nextstrain/ && git clone https://github.com/INSaFLU/nextstrain_builds.git && cd nextstrain_builds && rm -R -f ncov && git clone https://github.com/INSaFLU/dengue.git && git clone https://github.com/INSaFLU/mpox.git && https://github.com/INSaFLU/ncov.git 
+cd /software/nextstrain/ && git clone https://github.com/INSaFLU/nextstrain_builds.git && cd nextstrain_builds && rm -R -f ncov && git clone https://github.com/INSaFLU/dengue.git && git clone https://github.com/INSaFLU/mpox.git && git clone https://github.com/INSaFLU/ncov.git 
 if [ $? -ne 0 ]; then
     echo "Error installing Nextstrain builds"
     exit 1
@@ -136,7 +136,7 @@ fi
 
 # raven
 echo "Install raven"
-conda create --name=raven -c conda-forge  -c bioconda raven-assembler=1.8.1 && mv /tmp_install/software/raven/ /software/ && chmod a+x /software/raven/raven.sh 
+conda create --name=raven -c conda-forge  -c bioconda raven-assembler=1.8.1 --yes && mv /tmp_install/software/raven/ /software/ && chmod a+x /software/raven/raven.sh 
 if [ $? -ne 0 ]; then
     echo "Error installing raven"
     exit 1
