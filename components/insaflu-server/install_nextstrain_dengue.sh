@@ -22,17 +22,22 @@ mamba install -c conda-forge -c bioconda mafft iqtree seqkit --yes
 export CVXOPT_LAPACK_LIB_DIR=/usr/lib64
 export CVXOPT_BLAS_LIB_DIR=/usr/lib64
 export CFLAGS="-std=gnu99"
-pip install nextstrain-cli==8.5.4
-pip install numpy==1.26.4
-pip install pandas==1.5.3
-pip install pillow==12.2.0
-pip install matplotlib==3.9.4
-pip install phylo-treetime==0.11.5
-pip install nextstrain-augur==23.1.1
-pip install snakemake==7.32.2
-pip install cvxopt==1.3.2
-pip install pulp==2.7
-pip install epiweeks==2.4.0
+
+packages="
+nextstrain-cli==8.5.4
+numpy==1.26.4
+pandas==1.5.3
+pillow==12.2.0
+matplotlib==3.9.4
+phylo-treetime==0.11.5
+nextstrain-augur==23.1.1
+snakemake==7.32.2
+cvxopt==1.3.2
+pulp==2.7
+epiweeks==2.4.0
+"
+uv pip install --python "${CONDA_PREFIX}/bin/python" $packages
+
 curl -fsSL "https://github.com/nextstrain/nextclade/releases/download/3.10.2/nextclade-x86_64-unknown-linux-gnu" -o "/software/nextclade"
 chmod +x /software/nextclade
 mv /software/nextclade /software/miniconda2/envs/nextstrain_dengue/bin/
