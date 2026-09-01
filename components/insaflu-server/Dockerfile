@@ -20,13 +20,26 @@ ENV APP_USER=flu_user
 COPY install_uv.sh /tmp_install/
 RUN sh /tmp_install/install_uv.sh
 
-COPY configs/insaflu.conf configs/insaflu.env configs/insaflu_tmp_path.conf /tmp_install/configs/
-COPY sge_default/ /tmp_install/sge_default/
-COPY install_website.sh /tmp_install/
-RUN sh /tmp_install/install_website.sh
+COPY install_packages.sh /tmp_install/
+RUN sh /tmp_install/install_packages.sh
 
 COPY install_pixi.sh /tmp_install/
 RUN sh /tmp_install/install_pixi.sh
+
+COPY install_appuser.sh /tmp_install/
+RUN sh /tmp_install/install_appuser.sh
+
+COPY configs/insaflu.env /tmp_install/configs/
+COPY install_insaflu.sh /tmp_install/
+RUN sh /tmp_install/install_insaflu.sh
+
+COPY configs/insaflu.conf configs/insaflu_tmp_path.conf /tmp_install/configs/
+COPY install_apache.sh /tmp_install/
+RUN sh /tmp_install/install_apache.sh
+
+COPY sge_default/ /tmp_install/sge_default/
+COPY install_sge.sh /tmp_install/
+RUN sh /tmp_install/install_sge.sh
 
 COPY install_miniconda.sh /tmp_install/
 RUN sh /tmp_install/install_miniconda.sh
@@ -76,9 +89,78 @@ COPY install_raven.sh /tmp_install/
 RUN sh /tmp_install/install_raven.sh
 
 COPY configs/CPAN/ /tmp_install/configs/CPAN/
-COPY software/ /tmp_install/software/
-COPY install_software.sh /tmp_install/
-RUN sh /tmp_install/install_software.sh
+COPY install_bioperl.sh /tmp_install/
+RUN sh /tmp_install/install_bioperl.sh
+
+COPY software/EMBOSS-6.6.0/ /tmp_install/software/EMBOSS-6.6.0/
+COPY install_emboss.sh /tmp_install/
+RUN sh /tmp_install/install_emboss.sh
+
+COPY software/abricate/ /tmp_install/software/abricate/
+COPY install_abricate.sh /tmp_install/
+RUN sh /tmp_install/install_abricate.sh
+
+COPY install_bamtools.sh /tmp_install/
+RUN sh /tmp_install/install_bamtools.sh
+
+COPY install_fastqc.sh /tmp_install/
+RUN sh /tmp_install/install_fastqc.sh
+
+COPY install_fastq-tools.sh /tmp_install/
+RUN sh /tmp_install/install_fastq-tools.sh
+
+COPY install_fasttree.sh /tmp_install/
+RUN sh /tmp_install/install_fasttree.sh
+
+COPY install_freebayes.sh /tmp_install/
+RUN sh /tmp_install/install_freebayes.sh
+
+COPY install_igvtools.sh /tmp_install/
+RUN sh /tmp_install/install_igvtools.sh
+
+COPY install_mafft.sh /tmp_install/
+RUN sh /tmp_install/install_mafft.sh
+
+COPY install_mauve.sh /tmp_install/
+RUN sh /tmp_install/install_mauve.sh
+
+COPY software/prokka/ /tmp_install/software/prokka/
+COPY install_prokka.sh /tmp_install/
+RUN sh /tmp_install/install_prokka.sh
+
+COPY software/scripts/ /tmp_install/software/scripts/
+COPY install_scripts.sh /tmp_install/
+RUN sh /tmp_install/install_scripts.sh
+
+COPY software/snippy/ /tmp_install/software/snippy/
+COPY install_snippy.sh /tmp_install/
+RUN sh /tmp_install/install_snippy.sh
+
+COPY software/make_links_snippy.sh /tmp_install/software/
+COPY install_snippy_links.sh /tmp_install/
+RUN sh /tmp_install/install_snippy_links.sh
+
+COPY software/snpEff/ /tmp_install/software/snpEff/
+COPY install_snpeff.sh /tmp_install/
+RUN sh /tmp_install/install_snpeff.sh
+
+COPY install_spades.sh /tmp_install/
+RUN sh /tmp_install/install_spades.sh
+
+COPY software/trimmomatic/ /tmp_install/software/trimmomatic/
+COPY install_trimmomatic.sh /tmp_install/
+RUN sh /tmp_install/install_trimmomatic.sh
+
+COPY install_rabbitqc.sh /tmp_install/
+RUN sh /tmp_install/install_rabbitqc.sh
+
+COPY software/install_soft_medaka.sh software/medaka-requirements.txt /tmp_install/software/
+COPY software/medaka/ /tmp_install/software/medaka/
+COPY install_medaka.sh /tmp_install/
+RUN sh /tmp_install/install_medaka.sh
+
+COPY install_kallisto.sh /tmp_install/
+RUN sh /tmp_install/install_kallisto.sh
 
 COPY commands/ /tmp_install/commands/
 COPY entrypoint.sh /tmp_install/
