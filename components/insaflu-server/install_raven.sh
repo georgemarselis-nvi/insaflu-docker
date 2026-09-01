@@ -1,12 +1,13 @@
 #!/bin/bash
 # components/insaflu-server/install_raven.sh
-# Creates the raven conda environment and installs the wrapper script.
+# Creates the raven environment with pixi and installs the wrapper script.
 
 set -e
 
-eval "$(/software/miniconda2/bin/conda shell.bash hook)"
+export PIXI_HOME=/software/pixi
 
 echo "Install raven"
-conda create --name=raven -c conda-forge -c bioconda raven-assembler=1.8.1 --yes
+pixi global install --environment raven --channel conda-forge --channel bioconda raven-assembler=1.8.1
+ln -s /software/pixi/envs/raven /software/miniconda2/envs/raven
 mv /tmp_install/software/raven/ /software/
 chmod a+x /software/raven/raven.sh

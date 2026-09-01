@@ -1,10 +1,11 @@
 #!/bin/bash
 # components/insaflu-server/install_flumut.sh
-# Creates the flumut conda environment.
+# Creates the flumut environment with pixi.
 
 set -e
 
-eval "$(/software/miniconda2/bin/conda shell.bash hook)"
+export PIXI_HOME=/software/pixi
 
 echo "Install FluMut"
-conda create --name=flumut -c conda-forge -c bioconda flumut=0.6.3 --yes
+pixi global install --environment flumut --channel conda-forge --channel bioconda flumut=0.6.3
+ln -s /software/pixi/envs/flumut /software/miniconda2/envs/flumut

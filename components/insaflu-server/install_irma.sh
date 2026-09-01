@@ -1,10 +1,11 @@
 #!/bin/bash
 # components/insaflu-server/install_irma.sh
-# Creates the irma conda environment.
+# Creates the irma environment with pixi.
 
 set -e
 
-eval "$(/software/miniconda2/bin/conda shell.bash hook)"
+export PIXI_HOME=/software/pixi
 
 echo "Install IRMA"
-conda create --name=irma -c conda-forge -c bioconda irma=1.2.0 --yes
+pixi global install --environment irma --channel conda-forge --channel bioconda irma=1.2.0
+ln -s /software/pixi/envs/irma /software/miniconda2/envs/irma
