@@ -30,7 +30,7 @@ COPY install_appuser.sh /tmp_install/
 RUN sh /tmp_install/install_appuser.sh
 
 COPY configs/insaflu.env /tmp_install/configs/
-COPY install_insaflu.sh /tmp_install/
+COPY insaflu-requirements.txt install_insaflu.sh /tmp_install/
 RUN sh /tmp_install/install_insaflu.sh
 
 COPY configs/insaflu.conf configs/insaflu_tmp_path.conf /tmp_install/configs/

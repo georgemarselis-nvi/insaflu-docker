@@ -26,7 +26,7 @@ rm -f django-tables2-1.16.0/docs/pages/CHANGELOG.md
 uv pip install --system ./django-tables2-1.16.0
 rm -rf django-tables2-1.16.0 django-tables2-1.16.0.tar.gz
 
-uv pip install --system -r requirements.txt mod_wsgi-standalone
+uv pip install --system -r /tmp_install/insaflu-requirements.txt
 rm /etc/httpd/modules/mod_wsgi.so
 ln -s /usr/local/lib64/python3.8/site-packages/mod_wsgi/server/mod_wsgi-py36.cpython-36m-x86_64-linux-gnu.so /etc/httpd/modules/mod_wsgi.so
 mkdir /insaflu_web/INSaFLU/env
