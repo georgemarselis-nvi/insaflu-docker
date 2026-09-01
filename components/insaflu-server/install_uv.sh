@@ -7,7 +7,7 @@ set -e
 
 mkdir -p /software/extra_software
 cd /software/extra_software
-wget https://github.com/astral-sh/uv/releases/download/0.12.7/uv-x86_64-unknown-linux-gnu.tar.gz
+curl -fsSL -O https://github.com/astral-sh/uv/releases/download/0.12.7/uv-x86_64-unknown-linux-gnu.tar.gz
 tar -xzf uv-x86_64-unknown-linux-gnu.tar.gz
 mv uv-x86_64-unknown-linux-gnu/uv /usr/local/bin/uv
 chmod +x /usr/local/bin/uv

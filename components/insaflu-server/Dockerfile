@@ -17,13 +17,13 @@ ENV APP_USER=flu_user
 # with the data it moves out of /tmp_install. A single COPY of the whole build
 # context would make every edit invalidate every install step below it.
 
+COPY install_uv.sh /tmp_install/
+RUN sh /tmp_install/install_uv.sh
+
 COPY configs/insaflu.conf configs/insaflu.env configs/insaflu_tmp_path.conf /tmp_install/configs/
 COPY sge_default/ /tmp_install/sge_default/
 COPY install_website.sh /tmp_install/
 RUN sh /tmp_install/install_website.sh
-
-COPY install_uv.sh /tmp_install/
-RUN sh /tmp_install/install_uv.sh
 
 COPY install_miniconda.sh /tmp_install/
 RUN sh /tmp_install/install_miniconda.sh
