@@ -12,7 +12,7 @@ eval "$(/software/miniconda2/bin/conda shell.bash hook)"
 echo "Install Aln2Pheno"
 conda create --name=aln2pheno python=3.9 --yes
 conda activate aln2pheno
-pip install algn2pheno==1.1.5 --quiet
+uv pip install --python "${CONDA_PREFIX}/bin/python" algn2pheno==1.1.5
 conda deactivate
 mv /tmp_install/software/aln2pheno /software/
 chmod u+x /software/aln2pheno/aln2pheno.sh
