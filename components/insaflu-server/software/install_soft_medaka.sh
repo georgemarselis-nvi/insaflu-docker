@@ -1,11 +1,8 @@
 set -e
 
 cd /software
-pip3 install virtualenv
-virtualenv medaka --python=python3 --prompt "(medaka 1.2.6) "
-. medaka/bin/activate
-pip3 install --upgrade setuptools
-pip3 install --no-cache-dir medaka==1.2.6
+uv venv --python python3 --prompt "medaka 1.2.6" medaka
+uv pip install --python medaka/bin/python medaka==1.2.6
 cd medaka
 
 #Install minimap
