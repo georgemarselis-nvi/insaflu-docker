@@ -17,7 +17,8 @@ echo "Install Nextstrain Dengue"
 mkdir -p /software/pixi/nextstrain_dengue
 cd /software/pixi/nextstrain_dengue
 pixi init --channel conda-forge --channel bioconda
-pixi workspace platform add linux-64 --glibc 2.17
+pixi workspace platform add el7=linux-64 --glibc 2.17
+pixi workspace platform remove linux-64
 pixi add python=3.10 mafft iqtree seqkit
 ln -s /software/pixi/nextstrain_dengue/.pixi/envs/default /software/miniconda2/envs/nextstrain_dengue
 

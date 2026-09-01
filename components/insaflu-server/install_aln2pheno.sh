@@ -11,7 +11,8 @@ echo "Install Aln2Pheno"
 mkdir -p /software/pixi/aln2pheno
 cd /software/pixi/aln2pheno
 pixi init --channel conda-forge
-pixi workspace platform add linux-64 --glibc 2.17
+pixi workspace platform add el7=linux-64 --glibc 2.17
+pixi workspace platform remove linux-64
 pixi add python=3.9
 ln -s /software/pixi/aln2pheno/.pixi/envs/default /software/miniconda2/envs/aln2pheno
 uv pip install --python /software/pixi/aln2pheno/.pixi/envs/default/bin/python algn2pheno==1.1.5
