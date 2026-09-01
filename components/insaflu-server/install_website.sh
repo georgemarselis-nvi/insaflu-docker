@@ -82,13 +82,10 @@ function install_insaflu_base {
     # set -e is active at the top of the function
     mkdir /insaflu_web
     cd /insaflu_web
-    pip3 install "Cython<3.0"
-    pip3 install pyyaml==6.0.1
-    pip3 install pysam==0.19.1
+    uv pip install --system "Cython<3.0" pyyaml==6.0.1 pysam==0.19.1
     git clone --branch develop https://github.com/INSaFLU/INSaFLU.git
     cd INSaFLU
-    pip3 install -r requirements.txt
-    pip3 install mod_wsgi-standalone
+    uv pip install --system -r requirements.txt mod_wsgi-standalone
     rm /etc/httpd/modules/mod_wsgi.so
     ln -s /usr/local/lib64/python3.8/site-packages/mod_wsgi/server/mod_wsgi-py36.cpython-36m-x86_64-linux-gnu.so /etc/httpd/modules/mod_wsgi.so
     mkdir /insaflu_web/INSaFLU/env
