@@ -9,7 +9,7 @@ cd medaka
 # cd
 mkdir -p extra_software
 cd extra_software
-git clone --branch v2.17 https://github.com/lh3/minimap2.git
+git -c advice.detachedHead=false clone --depth 1 --branch v2.17 https://github.com/lh3/minimap2.git
 cd minimap2/
 make
 
