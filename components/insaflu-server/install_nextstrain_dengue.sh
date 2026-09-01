@@ -8,6 +8,8 @@
 # See also: https://github.com/INSaFLU/docker/issues/50
 # See also: https://github.com/INSaFLU/docker/issues/52
 # See also: https://github.com/INSaFLU/docker/issues/55
+# See also: https://github.com/INSaFLU/docker/issues/58
+# See also: https://github.com/INSaFLU/docker/issues/60
 
 set -e
 
