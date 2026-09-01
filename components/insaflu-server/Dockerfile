@@ -154,7 +154,7 @@ RUN sh /tmp_install/install_trimmomatic.sh
 COPY install_rabbitqc.sh /tmp_install/
 RUN sh /tmp_install/install_rabbitqc.sh
 
-COPY software/install_soft_medaka.sh software/medaka-requirements.txt /tmp_install/software/
+COPY software/install_soft_medaka.sh software/medaka-requirements.txt software/medaka-overrides.txt /tmp_install/software/
 COPY software/medaka/ /tmp_install/software/medaka/
 COPY install_medaka.sh /tmp_install/
 RUN sh /tmp_install/install_medaka.sh

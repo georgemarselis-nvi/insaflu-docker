@@ -14,6 +14,6 @@ set -e
 
 echo "Install prokka"
 cd /software
-git clone --branch v1.12 https://github.com/tseemann/prokka.git
+git -c advice.detachedHead=false clone --depth 1 --branch v1.12 https://github.com/tseemann/prokka.git
 mv /tmp_install/software/prokka/tbl2asn /software/prokka/binaries/linux
 chmod +x /software/prokka/binaries/linux/tbl2asn

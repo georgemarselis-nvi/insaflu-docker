@@ -7,7 +7,7 @@ set -e
 
 echo "Install snippy"
 cd /software
-git clone --branch v3.2 https://github.com/tseemann/snippy.git
+git -c advice.detachedHead=false clone --depth 1 --branch v3.2 https://github.com/tseemann/snippy.git
 ln -s snippy/perl5 perl5
 mv /tmp_install/software/snippy/ivar_variants_to_vcf.pl /software/snippy/bin/
 chmod a+x /software/snippy/bin/ivar_variants_to_vcf.pl

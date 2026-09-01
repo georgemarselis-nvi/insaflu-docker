@@ -2,14 +2,14 @@ set -e
 
 cd /software
 uv venv --python python3 --prompt "medaka 1.2.6" medaka
-uv pip install --python medaka/bin/python -r /tmp_install/software/medaka-requirements.txt
+uv pip install --python medaka/bin/python --overrides /tmp_install/software/medaka-overrides.txt -r /tmp_install/software/medaka-requirements.txt
 cd medaka
 
 #Install minimap
 # cd
 mkdir -p extra_software
 cd extra_software
-git clone  --branch v2.17 https://github.com/lh3/minimap2.git
+git clone --branch v2.17 https://github.com/lh3/minimap2.git
 cd minimap2/
 make
 
