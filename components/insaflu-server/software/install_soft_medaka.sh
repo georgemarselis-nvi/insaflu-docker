@@ -2,7 +2,7 @@ set -e
 
 cd /software
 uv venv --python python3 --prompt "medaka 1.2.6" medaka
-uv pip install --python medaka/bin/python medaka==1.2.6
+uv pip install --python medaka/bin/python -r /tmp_install/software/medaka-requirements.txt
 cd medaka
 
 #Install minimap
