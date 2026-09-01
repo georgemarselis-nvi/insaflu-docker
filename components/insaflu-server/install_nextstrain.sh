@@ -7,7 +7,8 @@ set -e
 echo "Install Nextstrain"
 mkdir -p /software/pixi/nextstrain
 cd /software/pixi/nextstrain
-pixi init --channel conda-forge --channel bioconda --platform linux-64
+pixi init --channel conda-forge --channel bioconda
+pixi workspace platform add linux-64 --glibc 2.17
 pixi add python=3.9 nextstrain-cli=3.2.4 augur=15.0.2 auspice nextalign=1.11.0 nextclade=1.11.0 snakemake git epiweeks pangolin pangolearn
 ln -s /software/pixi/nextstrain/.pixi/envs/default /software/miniconda2/envs/nextstrain
 mv /tmp_install/software/nextstrain/ /software/

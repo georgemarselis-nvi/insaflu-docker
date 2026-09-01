@@ -7,6 +7,7 @@ set -e
 echo "Install FluMut"
 mkdir -p /software/pixi/flumut
 cd /software/pixi/flumut
-pixi init --channel conda-forge --channel bioconda --platform linux-64
+pixi init --channel conda-forge --channel bioconda
+pixi workspace platform add linux-64 --glibc 2.17
 pixi add flumut=0.6.3
 ln -s /software/pixi/flumut/.pixi/envs/default /software/miniconda2/envs/flumut

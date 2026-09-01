@@ -10,7 +10,8 @@ chmod a+x /software/update_pangolin.sh
 mv /tmp_install/software/pangolin /software/
 mkdir -p /software/pixi/pangolin
 cd /software/pixi/pangolin
-pixi init --channel conda-forge --channel bioconda --platform linux-64
+pixi init --channel conda-forge --channel bioconda
+pixi workspace platform add linux-64 --glibc 2.17
 pixi add python=3.8 pangolin=4.2
 ln -s /software/pixi/pangolin/.pixi/envs/default /software/miniconda2/envs/pangolin
 chmod u+x /software/pangolin/pangolin.sh

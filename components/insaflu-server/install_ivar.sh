@@ -8,6 +8,7 @@ set -e
 echo "Install iVar"
 mkdir -p /software/pixi/ivar
 cd /software/pixi/ivar
-pixi init --channel conda-forge --channel bioconda --platform linux-64
+pixi init --channel conda-forge --channel bioconda
+pixi workspace platform add linux-64 --glibc 2.17
 pixi add ivar=1.4.2 bedtools=2.31.0 bwa=0.7.17
 ln -s /software/pixi/ivar/.pixi/envs/default /software/miniconda2/envs/ivar

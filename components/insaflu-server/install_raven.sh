@@ -7,7 +7,8 @@ set -e
 echo "Install raven"
 mkdir -p /software/pixi/raven
 cd /software/pixi/raven
-pixi init --channel conda-forge --channel bioconda --platform linux-64
+pixi init --channel conda-forge --channel bioconda
+pixi workspace platform add linux-64 --glibc 2.17
 pixi add raven-assembler=1.8.1
 ln -s /software/pixi/raven/.pixi/envs/default /software/miniconda2/envs/raven
 mv /tmp_install/software/raven/ /software/
