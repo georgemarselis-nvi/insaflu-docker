@@ -22,6 +22,9 @@ COPY sge_default/ /tmp_install/sge_default/
 COPY install_website.sh /tmp_install/
 RUN sh /tmp_install/install_website.sh
 
+COPY install_uv.sh /tmp_install/
+RUN sh /tmp_install/install_uv.sh
+
 COPY install_miniconda.sh /tmp_install/
 RUN sh /tmp_install/install_miniconda.sh
 
