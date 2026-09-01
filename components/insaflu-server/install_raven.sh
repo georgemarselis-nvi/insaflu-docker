@@ -4,10 +4,11 @@
 
 set -e
 
-export PIXI_HOME=/software/pixi
-
 echo "Install raven"
-pixi global install --environment raven --channel conda-forge --channel bioconda raven-assembler=1.8.1
-ln -s /software/pixi/envs/raven /software/miniconda2/envs/raven
+mkdir -p /software/pixi/raven
+cd /software/pixi/raven
+pixi init --channel conda-forge --channel bioconda --platform linux-64
+pixi add raven-assembler=1.8.1
+ln -s /software/pixi/raven/.pixi/envs/default /software/miniconda2/envs/raven
 mv /tmp_install/software/raven/ /software/
 chmod a+x /software/raven/raven.sh

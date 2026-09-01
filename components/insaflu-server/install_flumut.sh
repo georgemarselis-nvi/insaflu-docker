@@ -4,8 +4,9 @@
 
 set -e
 
-export PIXI_HOME=/software/pixi
-
 echo "Install FluMut"
-pixi global install --environment flumut --channel conda-forge --channel bioconda flumut=0.6.3
-ln -s /software/pixi/envs/flumut /software/miniconda2/envs/flumut
+mkdir -p /software/pixi/flumut
+cd /software/pixi/flumut
+pixi init --channel conda-forge --channel bioconda --platform linux-64
+pixi add flumut=0.6.3
+ln -s /software/pixi/flumut/.pixi/envs/default /software/miniconda2/envs/flumut

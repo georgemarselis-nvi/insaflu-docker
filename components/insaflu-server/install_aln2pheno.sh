@@ -7,11 +7,12 @@
 
 set -e
 
-export PIXI_HOME=/software/pixi
-
 echo "Install Aln2Pheno"
-pixi global install --environment aln2pheno --channel conda-forge python=3.9
-ln -s /software/pixi/envs/aln2pheno /software/miniconda2/envs/aln2pheno
-uv pip install --python /software/pixi/envs/aln2pheno/bin/python algn2pheno==1.1.5
+mkdir -p /software/pixi/aln2pheno
+cd /software/pixi/aln2pheno
+pixi init --channel conda-forge --platform linux-64
+pixi add python=3.9
+ln -s /software/pixi/aln2pheno/.pixi/envs/default /software/miniconda2/envs/aln2pheno
+uv pip install --python /software/pixi/aln2pheno/.pixi/envs/default/bin/python algn2pheno==1.1.5
 mv /tmp_install/software/aln2pheno /software/
 chmod u+x /software/aln2pheno/aln2pheno.sh

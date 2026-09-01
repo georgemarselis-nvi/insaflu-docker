@@ -4,11 +4,12 @@
 
 set -e
 
-export PIXI_HOME=/software/pixi
-
 echo "Install Nextstrain"
-pixi global install --environment nextstrain --channel conda-forge --channel bioconda python=3.9 nextstrain-cli=3.2.4 augur=15.0.2 auspice nextalign=1.11.0 nextclade=1.11.0 snakemake git epiweeks pangolin pangolearn
-ln -s /software/pixi/envs/nextstrain /software/miniconda2/envs/nextstrain
+mkdir -p /software/pixi/nextstrain
+cd /software/pixi/nextstrain
+pixi init --channel conda-forge --channel bioconda --platform linux-64
+pixi add python=3.9 nextstrain-cli=3.2.4 augur=15.0.2 auspice nextalign=1.11.0 nextclade=1.11.0 snakemake git epiweeks pangolin pangolearn
+ln -s /software/pixi/nextstrain/.pixi/envs/default /software/miniconda2/envs/nextstrain
 mv /tmp_install/software/nextstrain/ /software/
 chmod u+x /software/nextstrain/nextstrain.sh
 chmod u+x /software/nextstrain/nextstrain_mpx.sh

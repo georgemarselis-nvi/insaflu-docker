@@ -4,8 +4,9 @@
 
 set -e
 
-export PIXI_HOME=/software/pixi
-
 echo "Install IRMA"
-pixi global install --environment irma --channel conda-forge --channel bioconda irma=1.2.0
-ln -s /software/pixi/envs/irma /software/miniconda2/envs/irma
+mkdir -p /software/pixi/irma
+cd /software/pixi/irma
+pixi init --channel conda-forge --channel bioconda --platform linux-64
+pixi add irma=1.2.0
+ln -s /software/pixi/irma/.pixi/envs/default /software/miniconda2/envs/irma
