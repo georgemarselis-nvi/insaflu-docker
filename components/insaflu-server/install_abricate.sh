@@ -8,3 +8,4 @@ echo "Install abricate"
 cd /software
 git clone --branch v0.8.4 https://github.com/tseemann/abricate.git
 mv /tmp_install/software/abricate/nextstrain /software/abricate/db/
+/software/abricate/bin/abricate --setupdb
