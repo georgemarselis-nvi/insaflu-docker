@@ -1,6 +1,8 @@
 #!/bin/bash
 # components/insaflu-server/install_apache.sh
-# Configures httpd and the tmpfiles.d entry.
+# Configures httpd and the tmpfiles.d entry. Runs as the last install step:
+# it also removes /tmp_install, which install_finish.sh used to do before
+# the config files moved to the end of the Dockerfile.
 
 set -e
 
@@ -13,3 +15,5 @@ sed 's~</IfModule>~\n    AddType application/octet-stream .bam\n\n</IfModule>~' 
 mv /etc/httpd/conf/httpd.conf_temp /etc/httpd/conf/httpd.conf
 
 mv /tmp_install/configs/insaflu_tmp_path.conf /usr/lib/tmpfiles.d/insaflu_tmp_path.conf
+
+rm -R -f /tmp_install/

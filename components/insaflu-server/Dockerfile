@@ -1,3 +1,11 @@
+# components/insaflu-server/Dockerfile
+# INSaFLU built from source, CentOS 7, python 3.6.8 throughout.
+# Each script is copied immediately before the RUN that consumes it, together
+# with the data it moves out of /tmp_install. A single COPY of the whole build
+# context would make every edit invalidate every install step below it.
+# Config files land last: they change most often and nothing above needs them.
+# fork: github.com/georgemarselis-nvi/insaflu-docker branch nvi-install
+
 FROM centos:7
 LABEL authors="monsantopinheiro@gmail.com,daniel.sobral@insa.min-saude.pt"
 
@@ -29,13 +37,8 @@ RUN sh /tmp_install/install_pixi.sh
 COPY install_appuser.sh /tmp_install/
 RUN sh /tmp_install/install_appuser.sh
 
-COPY configs/insaflu.env /tmp_install/configs/
 COPY insaflu-requirements.txt install_insaflu.sh /tmp_install/
 RUN sh /tmp_install/install_insaflu.sh
-
-COPY configs/insaflu.conf configs/insaflu_tmp_path.conf /tmp_install/configs/
-COPY install_apache.sh /tmp_install/
-RUN sh /tmp_install/install_apache.sh
 
 COPY sge_default/ /tmp_install/sge_default/
 COPY install_sge.sh /tmp_install/
@@ -166,6 +169,16 @@ COPY commands/ /tmp_install/commands/
 COPY entrypoint.sh /tmp_install/
 COPY install_finish.sh /tmp_install/
 RUN sh /tmp_install/install_finish.sh
+
+# Config files land last: they change most often and nothing above needs them.
+# Editing insaflu.env or insaflu.conf now rebuilds only from here.
+
+COPY configs/insaflu.env /tmp_install/configs/
+RUN mv /tmp_install/configs/insaflu.env /insaflu_web/INSaFLU/.env && chown ${APP_USER}:${APP_USER} /insaflu_web/INSaFLU/.env
+
+COPY configs/insaflu.conf configs/insaflu_tmp_path.conf /tmp_install/configs/
+COPY install_apache.sh /tmp_install/
+RUN sh /tmp_install/install_apache.sh
 
 ENV PATH="/opt/sge/bin:/opt/sge/bin/lx-amd64:/insaflu_web/commands/:/software/kallisto_linux-v0.43.1/:${PATH}"
 

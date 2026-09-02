@@ -35,7 +35,6 @@ uv pip install --system -r /tmp_install/insaflu-requirements.txt
 rm /etc/httpd/modules/mod_wsgi.so
 ln -s /usr/local/lib64/python3.6/site-packages/mod_wsgi/server/mod_wsgi-py36.cpython-36m-x86_64-linux-gnu.so /etc/httpd/modules/mod_wsgi.so
 mkdir /insaflu_web/INSaFLU/env
-mv /tmp_install/configs/insaflu.env /insaflu_web/INSaFLU/.env
 chown -R ${APP_USER}:${APP_USER} /insaflu_web/INSaFLU
 mkdir /var/log/insaFlu
 chown -R ${APP_USER}:${APP_USER} /var/log/insaFlu
