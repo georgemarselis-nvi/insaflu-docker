@@ -15,6 +15,11 @@ cd /insaflu_web
 uv pip install --system "Cython<3.0" pyyaml==6.0.1 pysam==0.19.1
 git clone --branch develop https://github.com/INSaFLU/INSaFLU.git
 cd INSaFLU
+# INSaFLU/INSaFLU#213: pathogen_identification has two migrations numbered
+# 0054, both depending on 0053, and 0055 depends on only one of them. Django
+# refuses to run with two leaf nodes. Nothing depends on this one and 0055
+# sets the same field afterwards, anyway.
+rm -f pathogen_identification/migrations/0054_auto_20250327_1705.py
 
 # django-tables2 1.16.0 ships sdist only, and its tarball contains
 # docs/pages/CHANGELOG.md as a symlink to an absolute path in the
