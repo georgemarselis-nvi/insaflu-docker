@@ -4,9 +4,11 @@
 # with the data it moves out of /tmp_install. A single COPY of the whole build
 # context would make every edit invalidate every install step below it.
 # Config files land last: they change most often and nothing above needs them.
-# EMBOSS builds in its own stage: it depends on nothing else, and it installs
-# into its own prefix /software/emboss so the copy into the main stage cannot
-# clobber anything. Build it alone with --target emboss.
+# Tools that only compile and install into their own directory build in their
+# own stage, in parallel: emboss (own prefix /software/emboss), bamtools,
+# fastq-tools, mafft, spades, rabbitqc. RabbitQC's stage carries the compile
+# only: its nanostat and nanofilt pip installs stay in the main stage because
+# they write to the system python. Build one stage alone with --target <name>.
 # fork: github.com/georgemarselis-nvi/insaflu-docker branch nvi-install
 
 FROM centos:7 AS emboss
@@ -19,6 +21,56 @@ RUN sh /tmp_install/install_packages.sh
 COPY software/EMBOSS-6.6.0/ /tmp_install/software/EMBOSS-6.6.0/
 COPY install_emboss.sh /tmp_install/
 RUN sh /tmp_install/install_emboss.sh
+
+FROM centos:7 AS bamtools
+
+RUN mkdir -p /tmp_install /software
+
+COPY install_packages.sh /tmp_install/
+RUN sh /tmp_install/install_packages.sh
+
+COPY install_bamtools.sh /tmp_install/
+RUN sh /tmp_install/install_bamtools.sh
+
+FROM centos:7 AS fastq-tools
+
+RUN mkdir -p /tmp_install /software
+
+COPY install_packages.sh /tmp_install/
+RUN sh /tmp_install/install_packages.sh
+
+COPY install_fastq-tools.sh /tmp_install/
+RUN sh /tmp_install/install_fastq-tools.sh
+
+FROM centos:7 AS mafft
+
+RUN mkdir -p /tmp_install /software
+
+COPY install_packages.sh /tmp_install/
+RUN sh /tmp_install/install_packages.sh
+
+COPY install_mafft.sh /tmp_install/
+RUN sh /tmp_install/install_mafft.sh
+
+FROM centos:7 AS spades
+
+RUN mkdir -p /tmp_install /software
+
+COPY install_packages.sh /tmp_install/
+RUN sh /tmp_install/install_packages.sh
+
+COPY install_spades.sh /tmp_install/
+RUN sh /tmp_install/install_spades.sh
+
+FROM centos:7 AS rabbitqc
+
+RUN mkdir -p /tmp_install /software
+
+COPY install_packages.sh /tmp_install/
+RUN sh /tmp_install/install_packages.sh
+
+COPY install_rabbitqc_compile.sh /tmp_install/
+RUN sh /tmp_install/install_rabbitqc_compile.sh
 
 FROM centos:7
 LABEL authors="monsantopinheiro@gmail.com,daniel.sobral@insa.min-saude.pt"
@@ -116,14 +168,12 @@ COPY software/abricate/ /tmp_install/software/abricate/
 COPY install_abricate.sh /tmp_install/
 RUN sh /tmp_install/install_abricate.sh
 
-COPY install_bamtools.sh /tmp_install/
-RUN sh /tmp_install/install_bamtools.sh
+COPY --from=bamtools /software/bamtools/ /software/bamtools/
 
 COPY install_fastqc.sh /tmp_install/
 RUN sh /tmp_install/install_fastqc.sh
 
-COPY install_fastq-tools.sh /tmp_install/
-RUN sh /tmp_install/install_fastq-tools.sh
+COPY --from=fastq-tools /software/fastq-tools/ /software/fastq-tools/
 
 COPY install_fasttree.sh /tmp_install/
 RUN sh /tmp_install/install_fasttree.sh
@@ -134,8 +184,7 @@ RUN sh /tmp_install/install_freebayes.sh
 COPY install_igvtools.sh /tmp_install/
 RUN sh /tmp_install/install_igvtools.sh
 
-COPY install_mafft.sh /tmp_install/
-RUN sh /tmp_install/install_mafft.sh
+COPY --from=mafft /software/mafft-7.453-without-extensions/ /software/mafft-7.453-without-extensions/
 
 COPY install_mauve.sh /tmp_install/
 RUN sh /tmp_install/install_mauve.sh
@@ -160,15 +209,15 @@ COPY software/snpEff/ /tmp_install/software/snpEff/
 COPY install_snpeff.sh /tmp_install/
 RUN sh /tmp_install/install_snpeff.sh
 
-COPY install_spades.sh /tmp_install/
-RUN sh /tmp_install/install_spades.sh
+COPY --from=spades /software/SPAdes-3.11.1-Linux/ /software/SPAdes-3.11.1-Linux/
 
 COPY software/trimmomatic/ /tmp_install/software/trimmomatic/
 COPY install_trimmomatic.sh /tmp_install/
 RUN sh /tmp_install/install_trimmomatic.sh
 
-COPY install_rabbitqc.sh /tmp_install/
-RUN sh /tmp_install/install_rabbitqc.sh
+COPY --from=rabbitqc /software/RabbitQC/ /software/RabbitQC/
+COPY install_rabbitqc_python.sh /tmp_install/
+RUN sh /tmp_install/install_rabbitqc_python.sh
 
 COPY software/install_soft_medaka.sh software/medaka-requirements.txt software/medaka-overrides.txt /tmp_install/software/
 COPY software/medaka/ /tmp_install/software/medaka/

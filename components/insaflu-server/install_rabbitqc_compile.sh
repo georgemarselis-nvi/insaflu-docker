@@ -1,7 +1,7 @@
 #!/bin/bash
-# components/insaflu-server/install_rabbitqc.sh
-# Builds RabbitQC 0.0.1 and installs the nanopore QC tools.
-# The sed drops -static from the Makefile.
+# components/insaflu-server/install_rabbitqc_compile.sh
+# Compiles RabbitQC 0.0.1 into /software/RabbitQC. The -static flag is
+# stripped from the Makefile because centos:7 has no static libstdc++.
 
 set -e
 
@@ -15,4 +15,3 @@ cd RabbitQC
 sed 's/ -static//' Makefile > temp.txt
 mv -f temp.txt Makefile
 make
-uv pip install --system nanostat==1.5.0 nanofilt==2.7.1
