@@ -4,6 +4,9 @@
 
 set -e
 
+# requirement for fastq-tools
+yum -y install pcre-devel
+
 echo "Install fastq-tools"
 cd /software
 wget -O fastq-tools-0.8.tar.gz https://github.com/dcjones/fastq-tools/archive/v0.8.tar.gz
