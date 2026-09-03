@@ -1,7 +1,7 @@
 #!/bin/bash
-# components/insaflu-server/install_sge.sh
-# Builds and installs Open Grid Scheduler 8.1.9 and drops in the queue
-# configuration shipped in the build context.
+# components/insaflu-server/install_sge_compile.sh
+# Builds Open Grid Scheduler 8.1.9 into /opt/sge. The sgeadmin user and the
+# queue configuration land in the main stage: install_sge_configure.sh.
 
 set -e
 
@@ -20,11 +20,4 @@ sh scripts/bootstrap.sh -no-java -no-jni
 ./aimk -no-java -no-jni
 echo Y | /insaflu_sge_source/sge-8.1.9/source/scripts/distinst -local -all -noexit
 
-mv /tmp_install/sge_default/default/ ${SGE_ROOT}/
-chown -R sgeadmin:gridware ${SGE_ROOT}
-mv /tmp_install/sge_default/sun-grid-engine.sh /etc/profile.d/
-mv /tmp_install/sge_default/sgeexecd.p6444 /etc/init.d/
-mv /tmp_install/sge_default/sgemaster.p6444 /etc/init.d/
-mv /tmp_install/sge_default/root.cshrc /root/.cshrc
-chmod a+x /etc/profile.d/sun-grid-engine.sh
 rm -rf /insaflu_sge_source*

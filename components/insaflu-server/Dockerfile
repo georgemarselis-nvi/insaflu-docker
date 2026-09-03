@@ -6,9 +6,11 @@
 # Config files land last: they change most often and nothing above needs them.
 # Tools that only compile and install into their own directory build in their
 # own stage, in parallel: emboss (own prefix /software/emboss), bamtools,
-# fastq-tools, mafft, spades, rabbitqc. RabbitQC's stage carries the compile
-# only: its nanostat and nanofilt pip installs stay in the main stage because
-# they write to the system python. Build one stage alone with --target <name>.
+# fastq-tools, mafft, spades, rabbitqc, sge. RabbitQC's stage carries the
+# compile only: its nanostat and nanofilt pip installs stay in the main stage
+# because they write to the system python. SGE's stage carries the compile
+# into /opt/sge; the sgeadmin account and queue configuration land in the main
+# stage via install_sge_configure.sh. Build one stage alone with --target <name>.
 # fork: github.com/georgemarselis-nvi/insaflu-docker branch nvi-install
 
 FROM centos:7 AS emboss
@@ -72,6 +74,16 @@ RUN sh /tmp_install/install_packages.sh
 COPY install_rabbitqc_compile.sh /tmp_install/
 RUN sh /tmp_install/install_rabbitqc_compile.sh
 
+FROM centos:7 AS sge
+
+RUN mkdir -p /tmp_install /opt/sge
+
+COPY install_packages.sh /tmp_install/
+RUN sh /tmp_install/install_packages.sh
+
+COPY install_sge_compile.sh /tmp_install/
+RUN sh /tmp_install/install_sge_compile.sh
+
 FROM centos:7
 LABEL authors="monsantopinheiro@gmail.com,daniel.sobral@insa.min-saude.pt"
 
@@ -106,9 +118,10 @@ RUN sh /tmp_install/install_appuser.sh
 COPY insaflu-requirements.txt install_insaflu.sh /tmp_install/
 RUN sh /tmp_install/install_insaflu.sh
 
+COPY --from=sge /opt/sge/ /opt/sge/
 COPY sge_default/ /tmp_install/sge_default/
-COPY install_sge.sh /tmp_install/
-RUN sh /tmp_install/install_sge.sh
+COPY install_sge_configure.sh /tmp_install/
+RUN sh /tmp_install/install_sge_configure.sh
 
 COPY install_miniconda.sh /tmp_install/
 RUN sh /tmp_install/install_miniconda.sh
