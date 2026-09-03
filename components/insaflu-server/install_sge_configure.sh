@@ -7,7 +7,7 @@
 set -e
 
 # required dependency
-yum -y install hwloc-libs
+yum -y install hwloc-libs motif
 
 export SGE_ROOT=/opt/sge
 groupadd -g 58 gridware
