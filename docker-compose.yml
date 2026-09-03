@@ -11,6 +11,8 @@
 # The init service creates the host directories under BASE_PATH_DATA that
 # the named volumes bind to: the local driver does not create missing paths.
 # restart: no everywhere by policy: if it fails, it dies, we fix.
+# The hourly deck-chores job updates pangolin DATA only: the tool stays at
+# the image's pinned version. Full update stays manual: manage.py update_pangolin.
 # fork: github.com/georgemarselis-nvi/insaflu-docker
 
 ### places where the most important data is
@@ -196,9 +198,9 @@ services:
       - insaflu-server-log-insaflu:/var/log/insaFlu
       - insaflu-server-log-httpd:/var/log/httpd
     labels:
-      deck-chores.update-pangolin.command: sh -c "/software/update_pangolin.sh"
+      deck-chores.update-pangolin-data.command: sh -c "/software/update_pangolin_data.sh"
       # weekly, daily, hourly, every minute and every second.
-      deck-chores.update-pangolin.interval: hourly
+      deck-chores.update-pangolin-data.interval: hourly
     depends_on:
       init:
         condition: service_completed_successfully
@@ -235,9 +237,9 @@ services:
       - insaflu-server-log-insaflu:/var/log/insaFlu
       - insaflu-server-log-httpd:/var/log/httpd
     labels:
-      deck-chores.update-pangolin.command: sh -c "/software/update_pangolin.sh"
+      deck-chores.update-pangolin-data.command: sh -c "/software/update_pangolin.sh"
       # weekly, daily, hourly, every minute and every second.
-      deck-chores.update-pangolin.interval: hourly
+      deck-chores.update-pangolin-data.interval: hourly
     depends_on:
       init:
         condition: service_completed_successfully
@@ -274,9 +276,9 @@ services:
       - insaflu-server-log-insaflu:/var/log/insaFlu
       - insaflu-server-log-httpd:/var/log/httpd
     labels:
-      deck-chores.update-pangolin.command: sh -c "/software/update_pangolin.sh"
+      deck-chores.update-pangolin-data.command: sh -c "/software/update_pangolin.sh"
       # weekly, daily, hourly, every minute and every second.
-      deck-chores.update-pangolin.interval: hourly
+      deck-chores.update-pangolin-data.interval: hourly
     depends_on:
       init:
         condition: service_completed_successfully

@@ -162,7 +162,7 @@ COPY install_nextstrain_builds.sh /tmp_install/
 RUN sh /tmp_install/install_nextstrain_builds.sh
 
 COPY software/pangolin/ /tmp_install/software/pangolin/
-COPY software/update_pangolin.sh /tmp_install/software/
+COPY software/update_pangolin_data.sh /tmp_install/software/
 COPY install_pangolin.sh /tmp_install/
 RUN sh /tmp_install/install_pangolin.sh
 

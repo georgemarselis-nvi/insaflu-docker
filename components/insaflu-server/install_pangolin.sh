@@ -5,8 +5,8 @@
 set -e
 
 echo "Install Pangolin"
-mv /tmp_install/software/update_pangolin.sh /software
-chmod a+x /software/update_pangolin.sh
+mv /tmp_install/software/update_pangolin_data.sh /software
+chmod a+x /software/update_pangolin_data.sh
 mv /tmp_install/software/pangolin /software/
 mkdir -p /software/pixi/pangolin
 cd /software/pixi/pangolin
