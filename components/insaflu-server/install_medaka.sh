@@ -5,6 +5,9 @@
 
 set -e
 
+# prerequsite for compiling medaka
+yum -y install ncurses-devel
+
 echo "Install medaka"
 sh /tmp_install/software/install_soft_medaka.sh
 mv /tmp_install/software/medaka/bwa /software/medaka/bin/
