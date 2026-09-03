@@ -4,7 +4,21 @@
 # with the data it moves out of /tmp_install. A single COPY of the whole build
 # context would make every edit invalidate every install step below it.
 # Config files land last: they change most often and nothing above needs them.
+# EMBOSS builds in its own stage: it depends on nothing else, and it installs
+# into its own prefix /software/emboss so the copy into the main stage cannot
+# clobber anything. Build it alone with --target emboss.
 # fork: github.com/georgemarselis-nvi/insaflu-docker branch nvi-install
+
+FROM centos:7 AS emboss
+
+RUN mkdir -p /tmp_install /software/extra_software
+
+COPY install_packages.sh /tmp_install/
+RUN sh /tmp_install/install_packages.sh
+
+COPY software/EMBOSS-6.6.0/ /tmp_install/software/EMBOSS-6.6.0/
+COPY install_emboss.sh /tmp_install/
+RUN sh /tmp_install/install_emboss.sh
 
 FROM centos:7
 LABEL authors="monsantopinheiro@gmail.com,daniel.sobral@insa.min-saude.pt"
@@ -95,9 +109,8 @@ COPY configs/CPAN/ /tmp_install/configs/CPAN/
 COPY install_bioperl.sh /tmp_install/
 RUN sh /tmp_install/install_bioperl.sh
 
-COPY software/EMBOSS-6.6.0/ /tmp_install/software/EMBOSS-6.6.0/
-COPY install_emboss.sh /tmp_install/
-RUN sh /tmp_install/install_emboss.sh
+COPY --from=emboss /software/emboss/ /software/emboss/
+RUN ln -s /software/emboss/bin/seqret /usr/bin/seqret
 
 COPY software/abricate/ /tmp_install/software/abricate/
 COPY install_abricate.sh /tmp_install/

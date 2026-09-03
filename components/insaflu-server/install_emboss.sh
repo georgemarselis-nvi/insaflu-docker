@@ -9,8 +9,8 @@ mv /tmp_install/software/EMBOSS-6.6.0/EMBOSS-6.6.0.tar.gz /software/extra_softwa
 cd /software/extra_software
 tar -zxvf EMBOSS-6.6.0.tar.gz
 cd /software/extra_software/EMBOSS-6.6.0
-./configure --without-x
+./configure --without-x --prefix=/software/emboss
 make
 make install
-ln -s /usr/local/bin/seqret /usr/bin/seqret
+ln -s /software/emboss/bin/seqret /usr/bin/seqret
 rm -rf /software/extra_software/EMBOSS-6.6.0.tar.gz
