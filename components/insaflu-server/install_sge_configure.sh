@@ -6,6 +6,9 @@
 
 set -e
 
+# required dependency
+yum -y install hwloc-libs
+
 export SGE_ROOT=/opt/sge
 groupadd -g 58 gridware
 useradd -u 63 -g 58 -d ${SGE_ROOT} sgeadmin
